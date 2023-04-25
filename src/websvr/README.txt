@@ -1,6 +1,9 @@
 注: 在左侧对应的文件上右键，选择 在集成终端打开/Open in Integrated Terminal 即可在此文件所在的目录下执行命令
     在vsCode集成终端执行命令，如果报系统禁止运行的错误，解决方式请见: https://blog.csdn.net/vily_lei/article/details/108725829
 
+默认情况下，各个mod已经生成，可以在 minirsvr/websvr/目录下，直接执行 go build -o ../../bin/ httpserver.go 命令，即可完成编译。
+编译结束后，就会在 minirsvr/bin/ 目录里生成对应平台的可执行程序。
+
 1. 安装 golang 语言环境
 2. 在minirsvr/websvr/ 目录下先执行 go mod init main 命令
 3. 安装 gin框架, 细节请见 https://blog.csdn.net/vily_lei/article/details/125695689
