@@ -186,6 +186,7 @@ type RenderingSTChannelData struct {
 }
 type TaskExecNode struct {
 	uid           int64
+	index         int
 	desc          string
 	runningStatus int
 	rstData       RenderingSTChannelData
@@ -199,6 +200,7 @@ type TaskExecNode struct {
 
 func (self *TaskExecNode) Init() *TaskExecNode {
 	self.uid = 0
+	self.index = 0
 	self.desc = "a TaskExecNode instance."
 	self.pathDir = ""
 	self.filePath = "renderingStatus.json"
@@ -280,6 +282,7 @@ func StartupTaskCheckingTicker(in <-chan RenderingSTChannelData) {
 	// var nodes [8]TaskExecNode
 	var execNode TaskExecNode
 	execNode.uid = 1
+	execNode.index = 1
 	execNode.taskID = 1
 	execNode.times = 1
 	for range time.Tick(1 * time.Second) {
