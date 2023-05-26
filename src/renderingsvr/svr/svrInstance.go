@@ -153,22 +153,24 @@ type RTaskJson struct {
 }
 
 func StartupATaskReq() {
-	url := "http://localhost:9091/renderingTask"
+	url := "http://www.artvily.com/renderingTask"
 	// for range time.Tick(9 * time.Second) {
 
 	resp, err := http.Get(url)
 	flag := true
 	if err != nil {
 		flag = false
+		fmt.Printf("StartupATaskReq() get url failed, err: %v\n", err)
+	} else {
+		defer resp.Body.Close()
 	}
-	defer resp.Body.Close()
 	if flag {
 		data, err := ioutil.ReadAll(resp.Body)
 		if err == nil {
 			var taskInfo RTaskJson
 			err = json.Unmarshal(data, &taskInfo)
 			if err != nil {
-				fmt.Printf("readRenderingStatusJson() Unmarshal failed, err: %v\n", err)
+				fmt.Printf("StartupATaskReq() Unmarshal failed, err: %v\n", err)
 			} else {
 				tasks := taskInfo.Tasks
 				total := len(tasks)
