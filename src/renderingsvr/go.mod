@@ -1,8 +1,22 @@
 module main
 
-go 1.20
+go 1.18
 
-require github.com/gin-gonic/gin v1.9.0
+replace renderingsvr.com/svr => ./svr
+
+replace renderingsvr.com/filesys => ./filesys
+
+replace renderingsvr.com/message => ./message
+
+replace renderingsvr.com/task => ./task
+
+require (
+	github.com/gin-gonic/gin v1.9.0
+	renderingsvr.com/filesys v0.0.0-00010101000000-000000000000
+	renderingsvr.com/message v0.0.0-00010101000000-000000000000
+	renderingsvr.com/svr v0.0.0-00010101000000-000000000000
+	renderingsvr.com/task v0.0.0-00010101000000-000000000000
+)
 
 require (
 	github.com/bytedance/sonic v1.8.0 // indirect

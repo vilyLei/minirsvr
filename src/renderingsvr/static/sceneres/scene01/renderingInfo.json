@@ -1,8 +1,0 @@
-{
-		"renderer-proc":"./renderer.exe",
-		"renderer-instance":
-			{
-				"name":"high-image-renderer",
-				"status":"stop"
-			}
-		}

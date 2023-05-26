@@ -180,10 +180,16 @@ func StartupATask(resDirPath string, rendererPath string, taskID int64, times in
 }
 
 type RenderingSTChannelData struct {
-	pathDir string
-	stType  int
-	flag    int
+	pathDir  string
+	taskName string
+	stType   int
+	flag     int
+	uid      int64
+	index    int
 }
+
+var stRenderingCh chan RenderingSTChannelData
+
 type TaskExecNode struct {
 	uid           int64
 	index         int
@@ -192,6 +198,7 @@ type TaskExecNode struct {
 	rstData       RenderingSTChannelData
 
 	pathDir  string
+	taskName string
 	filePath string
 	taskID   int64
 	times    int64
@@ -203,6 +210,7 @@ func (self *TaskExecNode) Init() *TaskExecNode {
 	self.index = 0
 	self.desc = "a TaskExecNode instance."
 	self.pathDir = ""
+	self.taskName = ""
 	self.filePath = "renderingStatus.json"
 	self.runningStatus = 0
 	self.taskID = 1
@@ -216,52 +224,56 @@ func (self *TaskExecNode) Reset() *TaskExecNode {
 }
 
 func (self *TaskExecNode) Exec() *TaskExecNode {
-	if self.isEnabled() {
-		self.runningStatus = 1
-		if self.runningStatus == 1 {
-			if self.pathDir == "" {
-				fmt.Println("Exec(), ready startup a new task")
-				resDirPath := ".\\static\\sceneres\\scene01\\"
-				rendererPath := "./renderer.exe"
-				self.pathDir = resDirPath
-				self.filePath = self.pathDir + "renderingStatus.json"
-				self.times++
-				self.progress = 0
-				go StartupATask(resDirPath, rendererPath, self.taskID, self.times)
-			} else {
-				fmt.Println("Exec(), error:  self.pathDir is empty.")
+	if self.runningStatus == 1 {
+		if self.pathDir == "" {
+			fmt.Println("Exec(), ready startup a new task")
+			resDirPath := ".\\static\\sceneres\\scene01\\"
+			rendererPath := "./renderer.exe"
+			if self.taskName != "" {
+				resDirPath = ".\\static\\sceneres\\" + self.taskName + "\\"
 			}
+
+			self.pathDir = resDirPath
+			self.filePath = self.pathDir + "renderingStatus.json"
+
+			self.times++
+			self.progress = 0
+			self.runningStatus = 2
+			go StartupATask(resDirPath, rendererPath, self.taskID, self.times)
+		} else {
+			fmt.Println("Exec(), error:  self.pathDir is not empty.")
 		}
 	}
 	return self
 }
-func (self *TaskExecNode) Check() *TaskExecNode {
-	if self.runningStatus == 1 {
+func (self *TaskExecNode) CheckRendering() *TaskExecNode {
+	if self.runningStatus == 2 {
 		if self.pathDir != "" {
-			fmt.Println("Check(), task checking ...")
+			fmt.Println("CheckRendering(), task checking ...")
 			hasStatusFile := HasSceneResStatusJson(self.pathDir)
-			fmt.Println("Check(), >>> filePath: ", self.filePath)
-			fmt.Println("Check(), >>> hasStatusFile: ", hasStatusFile)
+			fmt.Println("CheckRendering(), >>> filePath: ", self.filePath)
+			fmt.Println("CheckRendering(), >>> hasStatusFile: ", hasStatusFile)
 			if hasStatusFile {
 
 				ins, err := readRenderingStatusJson(self.pathDir)
 				if err == nil {
-					// fmt.Println("Check(), ins: ", ins)
+					// fmt.Println("CheckRendering(), ins: ", ins)
 					task := ins.Rendering_task
 					taskID := task.TaskID
 					times := task.Times
 					progress := task.Progress
 					self.progress = progress
-					fmt.Println("Check(), taskID: ", taskID, ", times: ", times)
-					fmt.Println("Check(), ### progress: ", progress, "%")
+					fmt.Println("CheckRendering(), taskID: ", taskID, ", times: ", times)
+					fmt.Println("CheckRendering(), ### progress: ", progress, "%")
 					if taskID == self.taskID && times == self.times && progress >= 100 {
-						fmt.Println("Check(), >>> rendering task process finish !!!")
-						fmt.Println("Check(), >>> waiting for the next task ...")
+						fmt.Println("CheckRendering(), >>> rendering task process finish !!!")
+						fmt.Println("CheckRendering(), >>> waiting for the next task ...")
 						self.runningStatus = 0
 						self.pathDir = ""
+						self.taskName = ""
 					}
 				} else {
-					fmt.Println("Check(), >>> read renderingStatusJson failed !!!")
+					fmt.Println("CheckRendering(), >>> read renderingStatusJson failed !!!")
 				}
 			}
 		}
@@ -271,11 +283,10 @@ func (self *TaskExecNode) Check() *TaskExecNode {
 func (self *TaskExecNode) isFree() bool {
 	return self.runningStatus == 0
 }
-func (self *TaskExecNode) isEnabled() bool {
-	return self.runningStatus == 2
-}
 
-var stRenderingCh chan RenderingSTChannelData
+// func (self *TaskExecNode) isEnabled() bool {
+// 	return self.runningStatus == 2
+// }
 
 func StartupTaskCheckingTicker(in <-chan RenderingSTChannelData) {
 
@@ -285,21 +296,34 @@ func StartupTaskCheckingTicker(in <-chan RenderingSTChannelData) {
 	execNode.index = 1
 	execNode.taskID = 1
 	execNode.times = 1
+
 	for range time.Tick(1 * time.Second) {
 		var st RenderingSTChannelData
-		if execNode.isEnabled() {
-			fmt.Println("StartupTaskCheckingTicker() execNode is enable a task.")
+		// if execNode.isEnabled() {
+		// 	fmt.Println("StartupTaskCheckingTicker() execNode is enable a task.")
+		// 	execNode.Exec()
+		// } else {
+		// 	execNode.CheckRendering()
+		// }
+
+		status := execNode.runningStatus
+		switch status {
+		case 1:
 			execNode.Exec()
-		} else {
-			execNode.Check()
+		case 2:
+			execNode.CheckRendering()
+		default:
+			status = 0
 		}
+
 		st = <-in
 		// fmt.Println("StartupTaskCheckingTicker() >>> ticker st flag: ", st.flag)
 		if st.flag > 0 {
 			fmt.Println("StartupTaskCheckingTicker() >>> get a new task.")
 			if execNode.isFree() {
 				fmt.Println("StartupTaskCheckingTicker() execNode is free.")
-				execNode.runningStatus = 2
+				execNode.runningStatus = 1
+				execNode.taskName = st.taskName
 			}
 		}
 	}
@@ -321,21 +345,24 @@ func StartTaskMonitor() {
 	go StartupTaskCheckingTicker(stRenderingCh)
 }
 
-func AddATaskFromPath(pathDir string) {
+func AddATaskFromTaskName(taskName string) {
 	var st RenderingSTChannelData
-	st.pathDir = pathDir
+	st.taskName = taskName
 	st.stType = 1
 	st.flag = 1
 	stRenderingCh <- st
 }
 
 func StartSvr() {
+
 	router := gin.Default()
 	router.GET("/", func(c *gin.Context) {
 		c.String(http.StatusOK, fmt.Sprintf("There is Home Page."))
 	})
 	router.GET("/rendering", func(c *gin.Context) {
-		AddATaskFromPath("taskDir")
+		taskName := c.DefaultQuery("taskName", "default")
+		fmt.Println("xxx taskName: ", taskName)
+		AddATaskFromTaskName(taskName)
 		c.String(http.StatusOK, fmt.Sprintf("This task is currently executing now."))
 	})
 	router.Run(":9092")
