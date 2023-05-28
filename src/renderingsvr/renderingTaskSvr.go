@@ -15,6 +15,9 @@ import (
 // go mod edit -replace renderingsvr.com/task=./task
 // go mod edit -replace renderingsvr.com/svr=./svr
 
+// go build renderingTasksvr.go
+// go build -o ./ renderingTasksvr.go
+
 func main() {
 	fmt.Println("renderingTaskSvr init ...")
 	message.Init()
