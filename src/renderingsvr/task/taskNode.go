@@ -71,15 +71,6 @@ func loadRenderingRes(out chan<- int, param ResLoadParam) bool {
 	fmt.Println("load a remote res file success !!!")
 	out <- 1
 	return true
-
-	// url := "http://www.artvily.com/static/assets/obj/base.obj"
-	// for i := 0; i < 3; i++ {
-	// 	fmt.Println("				>>> loadRenderingRes step: ", i)
-	// 	time.Sleep(1 * time.Second)
-	// }
-	// fmt.Println("				>>> loadRenderingRes loaded all")
-	// out <- 1
-	// return true
 }
 func getCmdParamsString(rendererExeName string, taskID int64, renderingTimes int64, paths ...string) string {
 	// taskID := 1003
