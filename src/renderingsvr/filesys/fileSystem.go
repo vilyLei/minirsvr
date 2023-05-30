@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strconv"
 )
 
 // go mod init renderingsvr.com/filesys
@@ -27,13 +28,24 @@ import (
 "rendering-status":"task:running"
 }
 */
+type RenderingConfigParam struct {
+	Uuid       string
+	TaskID     int64
+	Name       string
+	OutputPath string
+	Times      int64
+	Progress   int
+
+	ResourceType string
+	Models       string
+}
 type RenderingTask struct {
 	Uuid     string `json:"uuid"`
 	TaskID   int64  `json:"taskID"`
 	Name     string `json:"name"`
 	Phase    string `json:"phase"`
 	Times    int64  `json:"times"`
-	Progress int64  `json:"progress"`
+	Progress int    `json:"progress"`
 }
 type RenderingIns struct {
 	Rendering_ins    string        `json:"rendering-ins"`
@@ -103,7 +115,7 @@ func CreateDirWithPath(path string) bool {
 	fmt.Println("CreateDirWithPath(), success !!!")
 	return true
 }
-func CreateRenderingInfoFileToPath(path string, rendererPath string, resourceType string, models string) {
+func CreateRenderingConfigFileToPath(path string, rendererPath string, param RenderingConfigParam) {
 
 	fileContent := `{
 		"renderer-proc":"` + rendererPath + `",
@@ -114,14 +126,20 @@ func CreateRenderingInfoFileToPath(path string, rendererPath string, resourceTyp
 			},
 		"resource":
 			{
-				"type": "` + resourceType + `",
-				"models": ` + models + `
+				"type": "` + param.ResourceType + `",
+				"models": ` + param.Models + `
+			},
+		"task":
+			{
+				"taskID": ` + strconv.FormatInt(param.TaskID, 10) + `,
+				"times": ` + strconv.FormatInt(param.Times, 10) + `,
+				"outputPath": "` + param.OutputPath + `"
 			}
 		}`
-	filePath := path + "renderingInfo.json"
+	filePath := path + "config.json"
 	file, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
-		fmt.Printf("CreateRenderingInfoFile(), err: %v\n", err)
+		fmt.Printf("CreateRenderingConfigFileToPath(), err: %v\n", err)
 		return
 	}
 	defer file.Close()
@@ -135,5 +153,5 @@ func CreateRenderingInfoFileToPath(path string, rendererPath string, resourceTyp
 	//因为 writer 是带缓存的，因此在调用 WriterString 方法时，内容是先写入缓存的
 	//所以要调用 flush方法，将缓存的数据真正写入到文件中。
 	writer.Flush()
-	fmt.Println("CreateRenderingInfoFileToPath(), success !!!")
+	fmt.Println("CreateRenderingConfigFileToPath(), success !!!")
 }

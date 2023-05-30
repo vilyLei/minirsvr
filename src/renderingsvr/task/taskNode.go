@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os/exec"
-	"strconv"
 	"strings"
 
 	"renderingsvr.com/filesys"
@@ -72,19 +71,19 @@ func loadRenderingRes(out chan<- int, param ResLoadParam) bool {
 	out <- 1
 	return true
 }
-func getCmdParamsString(rendererExeName string, taskID int64, renderingTimes int64, paths ...string) string {
-	// taskID := 1003
-	// renderingTimes := 11
+func getCmdParamsString(rendererExeName string, paths ...string) string {
 
-	path := ".\\static\\sceneres\\scene01\\"
+	// path := ".\\static\\sceneres\\scene01\\"
+	path := "./static/sceneres/scene01/"
 	if len(paths) > 0 {
 		path = paths[0]
 	}
-
-	taskIDStr := strconv.FormatInt(int64(taskID), 10)
-	renderingTimesStr := strconv.FormatInt(int64(renderingTimes), 10)
+	deviceType := "d3d12"
+	//renderer.exe "./static/scene/car001/" --device-type "d3d12"
+	// taskIDStr := strconv.FormatInt(int64(taskID), 10)
+	// renderingTimesStr := strconv.FormatInt(int64(renderingTimes), 10)
 	// cmdParams := "./exeForGo.exe .\\static\\sceneres\\scene01\\ " + taskIDStr + " " + renderingTimesStr
-	cmdParams := rendererExeName + " " + path + " " + taskIDStr + " " + renderingTimesStr
+	cmdParams := rendererExeName + ` ` + path + ` --device-type ` + deviceType + ``
 	return cmdParams
 }
 
@@ -94,10 +93,18 @@ func StartupATask(resDirPath string, rendererPath string, taskID int64, times in
 
 	hasStatusDir := filesys.HasSceneResDir(resDirPath)
 	fmt.Println("#### ### hasStatusDir: ", hasStatusDir)
+
+	var configParam filesys.RenderingConfigParam
+	configParam.ResourceType = "none"
+	configParam.Models = "[]"
+	configParam.TaskID = taskID
+	configParam.Times = times
+	configParam.Progress = 0
+	configParam.OutputPath = ""
 	if !hasStatusDir {
 		flag := filesys.CreateDirWithPath(resDirPath)
 		if flag {
-			filesys.CreateRenderingInfoFileToPath(resDirPath, rendererPath, "none", "[]")
+			filesys.CreateRenderingConfigFileToPath(resDirPath, rendererPath, configParam)
 		}
 	}
 
@@ -124,12 +131,13 @@ func StartupATask(resDirPath string, rendererPath string, taskID int64, times in
 	}
 	fmt.Println("StartupATask(), ready to load rendering resource finish !")
 	nameStr := GetFileNameFromUrl(resParam.Url)
-
-	filesys.CreateRenderingInfoFileToPath(resDirPath, rendererPath, "obj", `["`+nameStr+`"]`)
+	configParam.ResourceType = "obj"
+	configParam.Models = `["` + nameStr + `"]`
+	filesys.CreateRenderingConfigFileToPath(resDirPath, rendererPath, configParam)
 
 	fmt.Println("StartupATask(), ready exec the exe program !")
 	rendererExeName := "./renderer.exe"
-	cmdParams := getCmdParamsString(rendererExeName, taskID, times, resDirPath)
+	cmdParams := getCmdParamsString(rendererExeName, resDirPath)
 
 	fmt.Println("StartupATask(), exe cmdParams: ", cmdParams)
 
@@ -150,7 +158,7 @@ type TaskExecNode struct {
 	FilePath string
 	TaskID   int64
 	Times    int64
-	Progress int64
+	Progress int
 }
 
 func (self *TaskExecNode) Init() *TaskExecNode {
@@ -182,7 +190,7 @@ func (self *TaskExecNode) Exec() *TaskExecNode {
 			if self.TaskName == "" {
 				self.TaskName = "scene01"
 			}
-			resDirPath := ".\\static\\sceneres\\" + self.TaskName + "\\"
+			resDirPath := "./static/sceneres/" + self.TaskName + "/"
 
 			self.PathDir = resDirPath
 			self.FilePath = self.PathDir + "renderingStatus.json"
