@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"os/exec"
 	"strings"
 
@@ -190,7 +191,14 @@ func (self *TaskExecNode) Exec() *TaskExecNode {
 			if self.TaskName == "" {
 				self.TaskName = "scene01"
 			}
-			resDirPath := "./static/sceneres/" + self.TaskName + "/"
+			// resDirPath := "./static/sceneres/" + self.TaskName + "/"
+			rootDir, err := os.Getwd()
+			if err != nil {
+				fmt.Println("os.Getwd(), err: %v", rootDir)
+				rootDir = "."
+			}
+			fmt.Println("rootDir: ", rootDir)
+			resDirPath := rootDir + "/static/sceneres/" + self.TaskName + "/"
 
 			self.PathDir = resDirPath
 			self.FilePath = self.PathDir + "renderingStatus.json"

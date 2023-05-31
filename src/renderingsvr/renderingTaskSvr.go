@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"renderingsvr.com/filesys"
 	"renderingsvr.com/message"
@@ -20,6 +21,12 @@ import (
 
 func main() {
 	fmt.Println("renderingTaskSvr init ...")
+	rootDir, err := os.Getwd()
+	if err != nil {
+		fmt.Println("os.Getwd(), err: %v", rootDir)
+	}
+	fmt.Println("rootDir: ", rootDir)
+
 	message.Init()
 	resDirPath := ".\\static\\sceneres\\scene01\\"
 	flagBool, _ := filesys.PathExists(resDirPath)
