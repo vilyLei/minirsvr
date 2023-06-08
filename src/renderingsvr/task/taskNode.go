@@ -85,6 +85,13 @@ func getCmdParamsString(rendererExeName string, paths ...string) string {
 	// renderingTimesStr := strconv.FormatInt(int64(renderingTimes), 10)
 	// cmdParams := "./exeForGo.exe .\\static\\sceneres\\scene01\\ " + taskIDStr + " " + renderingTimesStr
 	cmdParams := rendererExeName + ` ` + path + ` --device-type ` + deviceType + ``
+	path = strings.ReplaceAll(path, `\`, `/`)
+	fmt.Println("### path: ", path)
+	// path = "D:/dev/webdev/minirsvr/src/renderingsvr/static/sceneres/modelTask01/"
+	path = " --rcp " + `` + path + ``
+	rendererExeName = "D:/dev/rendering/minirenderer/rendererRelease/TerminusApp.exe"
+	cmdParams = rendererExeName + path
+	path = ""
 	return cmdParams
 }
 

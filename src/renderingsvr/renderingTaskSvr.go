@@ -18,6 +18,7 @@ import (
 
 // go build renderingTasksvr.go
 // go build -o ./ renderingTasksvr.go
+// go run renderingTasksvr.go
 
 func main() {
 	fmt.Println("renderingTaskSvr init ...")
