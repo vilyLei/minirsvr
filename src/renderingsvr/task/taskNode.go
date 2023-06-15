@@ -10,7 +10,6 @@ import (
 
 	"renderingsvr.com/filesys"
 	"renderingsvr.com/message"
-
 )
 
 // go mod init renderingsvr.com/task
@@ -97,7 +96,7 @@ func getCmdParamsString(rendererExeName string, paths ...string) string {
 
 	// cmdParams = `python D:\dev\webProj\voxblender\pysrc\programs\tutorials\bcRenderShell.py -- renderer=D:/programs/blender/blender.exe rmodule=D:/dev/webProj/voxblender/pysrc/programs/tutorials/modelFileRendering.py rtaskDir=D:/dev/webProj/voxblender/models/model02/`
 	fmt.Println("rtaskDir: ", rtaskDir)
-	cmdParams = `python D:\dev\webProj\voxblender\pysrc\programs\tutorials\bcRenderShell.py -- renderer=D:/programs/blender/blender.exe rmodule=D:/dev/webProj/voxblender/pysrc/programs/tutorials/modelFileRendering.py rtaskDir=` + rtaskDir
+	cmdParams = `python D:\dev\\programs\tutorials\bcRenderShell.py -- renderer=D:/programs/blender/blender.exe rmodule=D:/dev/programs/tutorials/modelFileRendering.py rtaskDir=` + rtaskDir
 	return cmdParams
 }
 
