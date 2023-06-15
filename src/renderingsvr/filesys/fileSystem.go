@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"strconv"
+
 )
 
 // go mod init renderingsvr.com/filesys
@@ -80,7 +81,7 @@ func ReadRenderingStatusJson(pathDir string) (RenderingIns, error) {
 			fmt.Printf("readRenderingStatusJson() Unmarshal failed, err: %v\n", err)
 		}
 		// fmt.Println("readRenderingStatusJson(), rIns.Rendering_ins: ", rIns.Rendering_ins)
-		// fmt.Println("readRenderingStatusJson(), rIns.Rendering_task: ", rIns.Rendering_task)
+		fmt.Println("readRenderingStatusJson(), rIns.Rendering_task: ", rIns.Rendering_task)
 	} else {
 		fmt.Printf("readRenderingStatusJson() failed, err: %v\n", err)
 	}

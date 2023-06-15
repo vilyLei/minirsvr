@@ -10,9 +10,19 @@ import (
 	"github.com/gin-gonic/gin"
 	"renderingsvr.com/message"
 	"renderingsvr.com/task"
+
 )
 
 // go mod init renderingsvr.com/svr
+var AutoCheckRTask = false
+
+func ReadyAddANewTask(taskName string) {
+	var st message.RenderingSTChannelData
+	st.TaskName = taskName
+	st.StType = 1
+	st.Flag = 2
+	message.STRenderingCh <- st
+}
 
 var taskMap map[string]*message.RenderingSTChannelData
 
@@ -27,7 +37,18 @@ func startupRProxyTicker(out chan<- message.RenderingSTChannelData) {
 		out <- st
 	}
 }
+func startupAutoCheckTaskTicker() {
 
+	for range time.Tick(10 * time.Second) {
+		// fmt.Println("tick does...")
+		// var st message.RenderingSTChannelData
+		// st.PathDir = ""
+		// st.StType = 0
+		// st.Flag = 0
+		// out <- st
+		ReadyAddANewTask("random-task")
+	}
+}
 func StartupTaskCheckingTicker(in <-chan message.RenderingSTChannelData) {
 
 	// var nodes [8]TaskExecNode
@@ -77,6 +98,9 @@ func StartupTaskCheckingTicker(in <-chan message.RenderingSTChannelData) {
 	}
 }
 func StartTaskMonitor() {
+	if AutoCheckRTask {
+		go startupAutoCheckTaskTicker()
+	}
 	go startupRProxyTicker(message.STRenderingCh)
 	go StartupTaskCheckingTicker(message.STRenderingCh)
 }
@@ -110,13 +134,6 @@ func AddANewTaskFromTaskInfo(taskInfo RTaskJson) {
 	if task.Name == "" {
 		fmt.Println("*** nothing new test rendering task ***")
 	}
-}
-func ReadyAddANewTask(taskName string) {
-	var st message.RenderingSTChannelData
-	st.TaskName = taskName
-	st.StType = 1
-	st.Flag = 2
-	message.STRenderingCh <- st
 }
 
 func StartSvr() {

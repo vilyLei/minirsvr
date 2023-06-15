@@ -10,6 +10,7 @@ import (
 
 	"renderingsvr.com/filesys"
 	"renderingsvr.com/message"
+
 )
 
 // go mod init renderingsvr.com/task
@@ -86,12 +87,17 @@ func getCmdParamsString(rendererExeName string, paths ...string) string {
 	// cmdParams := "./exeForGo.exe .\\static\\sceneres\\scene01\\ " + taskIDStr + " " + renderingTimesStr
 	cmdParams := rendererExeName + ` ` + path + ` --device-type ` + deviceType + ``
 	path = strings.ReplaceAll(path, `\`, `/`)
+	rtaskDir := path
 	fmt.Println("### path: ", path)
 	// path = "D:/dev/webdev/minirsvr/src/renderingsvr/static/sceneres/modelTask01/"
 	path = " --rcp " + `` + path + ``
 	rendererExeName = "D:/dev/rendering/minirenderer/rendererRelease/TerminusApp.exe"
 	cmdParams = rendererExeName + path
-	path = ""
+	// path = ""
+
+	// cmdParams = `python D:\dev\webProj\voxblender\pysrc\programs\tutorials\bcRenderShell.py -- renderer=D:/programs/blender/blender.exe rmodule=D:/dev/webProj/voxblender/pysrc/programs/tutorials/modelFileRendering.py rtaskDir=D:/dev/webProj/voxblender/models/model02/`
+	fmt.Println("rtaskDir: ", rtaskDir)
+	cmdParams = `python D:\dev\webProj\voxblender\pysrc\programs\tutorials\bcRenderShell.py -- renderer=D:/programs/blender/blender.exe rmodule=D:/dev/webProj/voxblender/pysrc/programs/tutorials/modelFileRendering.py rtaskDir=` + rtaskDir
 	return cmdParams
 }
 
@@ -157,6 +163,7 @@ type TaskExecNode struct {
 	Uid           int64
 	Index         int
 	Desc          string
+	Phase         string
 	RunningStatus int
 	RstData       message.RenderingSTChannelData
 
@@ -179,6 +186,7 @@ func (self *TaskExecNode) Init() *TaskExecNode {
 	self.FilePath = "renderingStatus.json"
 	self.RunningStatus = 0
 	self.TaskID = 1
+	self.Phase = "running"
 	self.Times = 1
 	self.Progress = 0
 	return self
@@ -237,10 +245,15 @@ func (self *TaskExecNode) CheckRendering() *TaskExecNode {
 					taskID := task.TaskID
 					times := task.Times
 					progress := task.Progress
+					phase := task.Phase
 					self.Progress = progress
 					fmt.Println("CheckRendering(), taskID: ", taskID, ", times: ", times)
 					fmt.Println("CheckRendering(), ### progress: ", progress, "%")
 					if taskID == self.TaskID && times == self.Times && progress >= 100 {
+						fmt.Println("CheckRendering(), >>> phase: ", phase)
+						if phase == "error" {
+							fmt.Println("CheckRendering(), >>> rendering task process has a error !!!")
+						}
 						fmt.Println("CheckRendering(), >>> rendering task process finish !!!")
 						fmt.Println("CheckRendering(), >>> waiting for the next task ...")
 						self.RunningStatus = 0
