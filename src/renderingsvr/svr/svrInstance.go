@@ -96,6 +96,13 @@ func startupAutoCheckTaskTicker() {
 	}
 }
 
+// func startupAutoReqNewTaskTicker() {
+
+// 	for range time.Tick(10 * time.Second) {
+// 		// ReadyAddANewTask("random-task")
+// 	}
+// }
+
 func StartupTaskCheckingTicker(in <-chan message.RenderingSTChannelData) {
 
 	// var nodes [8]TaskExecNode
@@ -158,10 +165,15 @@ func StartupTaskCheckingTicker(in <-chan message.RenderingSTChannelData) {
 					fmt.Println("	>>> execNode.ResUrl: ", execNode.ResUrl)
 				}
 			case 2:
-				fmt.Println("StartupTaskCheckingTicker() >>> ready add a new task.")
+				fmt.Println("StartupTaskCheckingTicker() >>> ready add a new task, execNode.IsFree(): ", execNode.IsFree())
 				if execNode.IsFree() {
 					execNode.RunningStatus = 5
 					go StartupATaskReq()
+				}
+			case 11:
+				fmt.Println("StartupTaskCheckingTicker() >>> nothing a new task.")
+				if execNode.RunningStatus == 5 {
+					execNode.RunningStatus = 0
 				}
 			default:
 				st.Flag = 0
@@ -173,6 +185,9 @@ func StartTaskMonitor() {
 	if AutoCheckRTask {
 		go startupAutoCheckTaskTicker()
 	}
+	// if AutoCheckRTask {
+	// 	startupAutoReqNewTaskTicker()
+	// }
 	go startupRProxyTicker(message.STRenderingCh)
 	go StartupTaskCheckingTicker(message.STRenderingCh)
 }
@@ -182,33 +197,46 @@ func HasTaskByName(ns string) bool {
 	return hasKey
 }
 
-// func AddANewTaskFromTaskInfo(taskInfo RTasksJson) {
 func AddANewTaskFromTaskInfo(tasks []RTaskJsonNode) {
 
 	// taskMap[node.name] = &node
 	// tasks := taskInfo.Tasks
 	total := len(tasks)
-	var task RTaskJsonNode
-	task.Name = ""
-	for i := 0; i < total; i++ {
+	flag := true
+	if total > 0 {
+		var task RTaskJsonNode
+		task.Name = ""
+		for i := 0; i < total; i++ {
 
-		flag := HasTaskByName(tasks[i].Name)
-		if !flag {
-			task = tasks[i]
-			fmt.Println("AddANewTaskFromTaskInfo() >>> got a new task:", task)
-			var st message.RenderingSTChannelData
-			st.TaskID = task.Id
-			st.TaskName = task.Name
-			st.ResUrl = task.ResUrl
-			st.StType = 1
-			st.Flag = 1
-			taskMap[task.Name] = &st
-			message.STRenderingCh <- st
-			break
+			flag := HasTaskByName(tasks[i].Name)
+			if !flag {
+				task = tasks[i]
+				fmt.Println("AddANewTaskFromTaskInfo() >>> got a new task:", task)
+				var st message.RenderingSTChannelData
+				st.TaskID = task.Id
+				st.TaskName = task.Name
+				st.ResUrl = task.ResUrl
+				st.StType = 1
+				st.Flag = 1
+				taskMap[task.Name] = &st
+				message.STRenderingCh <- st
+				flag = false
+				break
+			}
 		}
+		// if task.Name == "" {
+		// 	fmt.Println("*** nothing new test rendering task ***")
+		// }
 	}
-	if task.Name == "" {
-		fmt.Println("*** nothing new test rendering task ***")
+	if flag {
+		fmt.Println("AddANewTaskFromTaskInfo() >>> nothing new test rendering task !!!!!!!")
+		var st message.RenderingSTChannelData
+		st.TaskID = 0
+		st.TaskName = ""
+		st.ResUrl = ""
+		st.StType = 0
+		st.Flag = 11
+		message.STRenderingCh <- st
 	}
 }
 
@@ -239,6 +267,7 @@ func StartSvr(portStr string) {
 	{
 		"tasks":[
 			{
+				"id": 1001,
 				"name":"modelTask01",
 				"resUrl:"http://www.artvily.com/static/assets/obj/base.obj"
 			}
@@ -303,6 +332,7 @@ func receiveATaskReq(data []byte) {
 			AddANewTaskFromTaskInfo([]RTaskJsonNode{task})
 		} else {
 			fmt.Println("receiveATaskReq(), has not a new task.")
+			AddANewTaskFromTaskInfo([]RTaskJsonNode{})
 		}
 	}
 }
@@ -342,10 +372,13 @@ func NotifyTaskInfoToSvr(phase string, progress int, taskId int64, taskName stri
 func StartupATaskReq() {
 
 	fmt.Println("### startup a task req ...")
-	NotifyTaskInfoToSvr("taskreq", 0, 0, "")
+	if AutoCheckRTask {
+		NotifyTaskInfoToSvr("reqanewrtask", 0, 0, "")
+	} else {
+		NotifyTaskInfoToSvr("taskreq", 0, 0, "")
+	}
 }
 func RequestANewTask() {
-
 	fmt.Println("### RequestANewTask() ...")
 	NotifyTaskInfoToSvr("reqanewrtask", 0, 0, "")
 }
