@@ -12,6 +12,7 @@ type RenderingSTChannelData struct {
 	ResUrl   string
 	StType   int
 	Flag     int
+	TaskID   int64
 }
 
 var STRenderingCh chan RenderingSTChannelData

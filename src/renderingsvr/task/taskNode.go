@@ -19,6 +19,12 @@ type ResLoadParam struct {
 	TaskName string
 	PathDir  string
 }
+type TaskOutputParam struct {
+	PicPath  string
+	TaskName string
+	TaskID   int64
+	Error    bool
+}
 
 func GetFileNameFromUrl(url string) string {
 	nameStr := url[strings.LastIndex(url, "/")+1 : len(url)]
@@ -28,9 +34,20 @@ func GetFileNameFromUrl(url string) string {
 	}
 	return nameStr
 }
+func GetFileNameAndSuffixFromUrl(url string) (string, string) {
+	nameStr := url[strings.LastIndex(url, "/")+1 : len(url)]
+	i := strings.LastIndex(nameStr, "?")
+	if i > 0 {
+		nameStr = nameStr[0:i]
+	}
+	parts := strings.Split(nameStr, ".")
+	return nameStr, strings.ToLower(parts[1])
+}
 func loadRenderingRes(out chan<- int, param ResLoadParam) bool {
 
 	resUrl := param.Url
+	fmt.Println("loadRenderingRes(), resUrl: ", resUrl)
+
 	// Get the data
 	resp, loadErr := http.Get(resUrl)
 	if loadErr != nil {
@@ -96,7 +113,7 @@ func getCmdParamsString(rendererExeName string, paths ...string) string {
 
 	// cmdParams = `python D:\dev\webProj\voxblender\pysrc\programs\tutorials\bcRenderShell.py -- renderer=D:/programs/blender/blender.exe rmodule=D:/dev/webProj/voxblender/pysrc/programs/tutorials/modelFileRendering.py rtaskDir=D:/dev/webProj/voxblender/models/model02/`
 	fmt.Println("rtaskDir: ", rtaskDir)
-	cmdParams = `python D:\dev\\programs\tutorials\bcRenderShell.py -- renderer=D:/programs/blender/blender.exe rmodule=D:/dev/programs/tutorials/modelFileRendering.py rtaskDir=` + rtaskDir
+	cmdParams = `python D:\dev\webProj\voxblender\pysrc\programs\tutorials\bcRenderShell.py -- renderer=D:/programs/blender/blender.exe rmodule=D:/dev/webProj/voxblender/pysrc/programs/tutorials/modelFileRendering.py rtaskDir=` + rtaskDir
 	return cmdParams
 }
 
@@ -143,8 +160,8 @@ func StartupATask(resDirPath string, rendererPath string, taskID int64, times in
 		}
 	}
 	fmt.Println("StartupATask(), ready to load rendering resource finish !")
-	nameStr := GetFileNameFromUrl(resParam.Url)
-	configParam.ResourceType = "obj"
+	nameStr, suffix := GetFileNameAndSuffixFromUrl(resParam.Url)
+	configParam.ResourceType = suffix
 	configParam.Models = `["` + nameStr + `"]`
 	filesys.CreateRenderingConfigFileToPath(resDirPath, rendererPath, configParam)
 
@@ -166,13 +183,15 @@ type TaskExecNode struct {
 	RunningStatus int
 	RstData       message.RenderingSTChannelData
 
-	PathDir  string
-	TaskName string
-	ResUrl   string
-	FilePath string
-	TaskID   int64
-	Times    int64
-	Progress int
+	PathDir     string
+	TaskName    string
+	ResUrl      string
+	FilePath    string
+	TaskID      int64
+	Times       int64
+	ReqProgress int
+	Progress    int
+	TaskOutput  TaskOutputParam
 }
 
 func (self *TaskExecNode) Init() *TaskExecNode {
@@ -187,14 +206,105 @@ func (self *TaskExecNode) Init() *TaskExecNode {
 	self.TaskID = 1
 	self.Phase = "running"
 	self.Times = 1
+	self.ReqProgress = 0
 	self.Progress = 0
+	self.TaskOutput.PicPath = ""
+	self.TaskOutput.Error = false
 	return self
 }
 func (self *TaskExecNode) Reset() *TaskExecNode {
 	self.Init()
 	return self
 }
+func (self *TaskExecNode) CheckTaskStatus() (bool, int) {
 
+	if self.PathDir != "" {
+		fmt.Println("CheckTaskStatus(), task checking ...")
+		hasStatusFile := filesys.HasSceneResStatusJson(self.PathDir)
+		fmt.Println("CheckTaskStatus(), >>> filePath: ", self.FilePath)
+		fmt.Println("CheckTaskStatus(), >>> hasStatusFile: ", hasStatusFile)
+
+		if hasStatusFile {
+
+			ins, err := filesys.ReadRenderingStatusJson(self.PathDir)
+			if err == nil {
+				// fmt.Println("CheckTaskStatus(), ins: ", ins)
+				task := ins.Rendering_task
+				taskID := task.TaskID
+				times := task.Times
+				progress := task.Progress
+				phase := task.Phase
+				self.Progress = progress
+
+				fmt.Println("CheckTaskStatus(), taskID: ", taskID, ", times: ", times)
+				fmt.Println("CheckTaskStatus(), ### progress: ", progress, "%")
+				taskFlag := false
+				if taskID == self.TaskID && times == self.Times {
+					if progress >= 100 {
+
+						fmt.Println("CheckTaskStatus(), >>> self.PathDir: ", self.PathDir)
+						fmt.Println("CheckTaskStatus(), >>> phase: ", phase)
+
+						taskStatus := 1
+						if phase == "error" {
+							taskStatus = -1
+							fmt.Println("CheckTaskStatus(), >>> rendering task process has a error !!!")
+						} else {
+							// check output pic file
+							taskFlag, _ = filesys.CheckPicFileInCurrDir(self.PathDir)
+							fmt.Println("CheckTaskStatus(), >>> has output rendering pic: ", taskFlag)
+							if !taskFlag {
+								taskStatus = -1
+							}
+						}
+						return taskFlag, taskStatus
+					}
+					return taskFlag, 5
+				}
+				return taskFlag, 6
+			} else {
+				fmt.Println("CheckTaskStatus(), >>> read renderingStatusJson failed !!!")
+			}
+		}
+	}
+	return false, 0
+}
+func (self *TaskExecNode) toTaskFinish() *TaskExecNode {
+
+	fmt.Println("toTaskFinish(), >>> pathDif: ", self.PathDir)
+	picFlag, picNames := filesys.CheckPicFileInCurrDir(self.PathDir)
+	self.TaskOutput.PicPath = ""
+	if picFlag {
+		// ready send the pic to a remote data center server
+		picFilePath := self.PathDir + picNames[0]
+		fmt.Println("toTaskFinish(), >>> picFilePath: ", picFilePath)
+		self.TaskOutput.PicPath = picFilePath
+	}
+	self.TaskOutput.Error = false
+	self.TaskOutput.TaskID = self.TaskID
+	self.TaskOutput.TaskName = self.TaskName
+
+	self.RunningStatus = 0
+	self.PathDir = ""
+	self.TaskName = ""
+	fmt.Println("toTaskFinish(), >>> waiting for the next task ...")
+	return self
+}
+func (self *TaskExecNode) toTaskError() *TaskExecNode {
+
+	fmt.Println("toTaskError(), >>> pathDif: ", self.PathDir)
+
+	self.TaskOutput.Error = true
+	self.TaskOutput.PicPath = ""
+	self.TaskOutput.TaskID = self.TaskID
+	self.TaskOutput.TaskName = self.TaskName
+
+	self.RunningStatus = 0
+	self.PathDir = ""
+	self.TaskName = ""
+	fmt.Println("toTaskError(), >>> waiting for the next task ...")
+	return self
+}
 func (self *TaskExecNode) Exec() *TaskExecNode {
 	if self.RunningStatus == 1 {
 		if self.PathDir == "" {
@@ -220,7 +330,19 @@ func (self *TaskExecNode) Exec() *TaskExecNode {
 			self.Times++
 			self.Progress = 0
 			self.RunningStatus = 2
-			go StartupATask(resDirPath, rendererPath, self.TaskID, self.Times, self.TaskName, self.ResUrl)
+			_, taskStatus := self.CheckTaskStatus()
+			if taskStatus == 1 {
+				fmt.Println("Exec(), the task output result is directly available !!!")
+				self.toTaskFinish()
+			} else {
+				if taskStatus != 0 {
+					// clear the status info file
+					filePath := resDirPath + "renderingStatus.json"
+					flag := filesys.RemoveFileWithPath(filePath)
+					fmt.Println("Exec(), clear the rtask status info file, flag: ", flag, filePath)
+				}
+				go StartupATask(resDirPath, rendererPath, self.TaskID, self.Times, self.TaskName, self.ResUrl)
+			}
 		} else {
 			fmt.Println("Exec(), error:  self.pathDir is not empty.")
 		}
@@ -229,39 +351,19 @@ func (self *TaskExecNode) Exec() *TaskExecNode {
 }
 func (self *TaskExecNode) CheckRendering() *TaskExecNode {
 	if self.RunningStatus == 2 {
-		if self.PathDir != "" {
-			fmt.Println("CheckRendering(), task checking ...")
-			hasStatusFile := filesys.HasSceneResStatusJson(self.PathDir)
-			fmt.Println("CheckRendering(), >>> filePath: ", self.FilePath)
-			fmt.Println("CheckRendering(), >>> hasStatusFile: ", hasStatusFile)
-
-			if hasStatusFile {
-
-				ins, err := filesys.ReadRenderingStatusJson(self.PathDir)
-				if err == nil {
-					// fmt.Println("CheckRendering(), ins: ", ins)
-					task := ins.Rendering_task
-					taskID := task.TaskID
-					times := task.Times
-					progress := task.Progress
-					phase := task.Phase
-					self.Progress = progress
-					fmt.Println("CheckRendering(), taskID: ", taskID, ", times: ", times)
-					fmt.Println("CheckRendering(), ### progress: ", progress, "%")
-					if taskID == self.TaskID && times == self.Times && progress >= 100 {
-						fmt.Println("CheckRendering(), >>> phase: ", phase)
-						if phase == "error" {
-							fmt.Println("CheckRendering(), >>> rendering task process has a error !!!")
-						}
-						fmt.Println("CheckRendering(), >>> rendering task process finish !!!")
-						fmt.Println("CheckRendering(), >>> waiting for the next task ...")
-						self.RunningStatus = 0
-						self.PathDir = ""
-						self.TaskName = ""
-					}
-				} else {
-					fmt.Println("CheckRendering(), >>> read renderingStatusJson failed !!!")
-				}
+		flag, status := self.CheckTaskStatus()
+		if flag {
+			if status == 1 {
+				fmt.Println("CheckRendering(), >>> rendering task process finish !!!")
+				self.toTaskFinish()
+			} else {
+				fmt.Println("CheckRendering(), >>> rendering task process failed A !!!")
+				self.toTaskError()
+			}
+		} else {
+			if status == -1 {
+				fmt.Println("CheckRendering(), >>> rendering task process failed B !!!")
+				self.toTaskError()
 			}
 		}
 	}

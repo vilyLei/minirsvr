@@ -8,7 +8,6 @@ import (
 	"renderingsvr.com/message"
 	"renderingsvr.com/svr"
 	"renderingsvr.com/task"
-
 )
 
 // go mod init renderingsvr.com/main
@@ -26,9 +25,9 @@ import (
 
 func main() {
 	fmt.Println("renderingTaskSvr init ...")
-	rootDir, err := os.Getwd()
-	if err != nil {
-		fmt.Println("os.Getwd(), err: %v", rootDir)
+	rootDir, errOGT := os.Getwd()
+	if errOGT != nil {
+		fmt.Println("os.Getwd(), errOGT: %v", errOGT)
 	}
 	fmt.Println("rootDir: ", rootDir)
 
@@ -62,6 +61,6 @@ func main() {
 		fmt.Println("auto checking rendering task")
 		svr.AutoCheckRTask = true
 	}
-	svr.Init()
+	svr.Init(portStr)
 	fmt.Println("renderingTaskSvr end ...")
 }

@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"strconv"
-
+	"strings"
 )
 
 // go mod init renderingsvr.com/filesys
@@ -64,6 +64,10 @@ func PathExists(path string) (bool, error) {
 	}
 	return false, err
 }
+func RemoveFileWithPath(filePath string) bool {
+	err := os.Remove(filePath)
+	return !(err != nil)
+}
 func ReadRenderingStatusJson(pathDir string) (RenderingIns, error) {
 	pathStr := pathDir + "renderingStatus.json"
 	jsonFile, err := os.OpenFile(pathStr, os.O_RDONLY, os.ModeDevice)
@@ -86,6 +90,42 @@ func ReadRenderingStatusJson(pathDir string) (RenderingIns, error) {
 		fmt.Printf("readRenderingStatusJson() failed, err: %v\n", err)
 	}
 	return rIns, err
+}
+
+func GetAllFilesNamesInCurrDir(dir string) []string {
+	// names := make([]string, 0)
+	var names []string
+	files, err := ioutil.ReadDir(dir)
+	if err != nil {
+		return names
+	}
+	for _, file := range files {
+		if !file.IsDir() {
+			// fmt.Println(file.Name())
+			names = append(names, file.Name())
+		}
+	}
+	return names
+}
+
+func CheckPicFileInCurrDir(dir string) (bool, []string) {
+	// names := make([]string, 0)
+	var names []string = GetAllFilesNamesInCurrDir(dir)
+	flag := false
+	var picNames []string
+
+	for _, ns := range names {
+		parts := strings.Split(ns, ".")
+		pns := parts[len(parts)-1]
+		pns = strings.ToLower(pns)
+		// fmt.Println("pns: ", pns)
+		switch pns {
+		case "jpg", "jpeg", "png":
+			picNames = append(picNames, ns)
+			flag = true
+		}
+	}
+	return flag, picNames
 }
 func HasSceneResDir(resDirPath string) bool {
 	// fmt.Println("\nHasSceneResDir(), resDirPath: ", resDirPath)
