@@ -19,7 +19,7 @@
 
 # Go workspace file
 go.work
-src/renderingsvr/static/
+src/renderingsvr/static/sceneres/
 dist/
 node_modules/
 *.code-workspace

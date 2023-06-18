@@ -202,7 +202,7 @@ func AddANewTaskFromTaskInfo(tasks []RTaskJsonNode) {
 	// taskMap[node.name] = &node
 	// tasks := taskInfo.Tasks
 	total := len(tasks)
-	flag := true
+	nothingFlag := true
 	if total > 0 {
 		var task RTaskJsonNode
 		task.Name = ""
@@ -220,7 +220,7 @@ func AddANewTaskFromTaskInfo(tasks []RTaskJsonNode) {
 				st.Flag = 1
 				taskMap[task.Name] = &st
 				message.STRenderingCh <- st
-				flag = false
+				nothingFlag = false
 				break
 			}
 		}
@@ -228,7 +228,7 @@ func AddANewTaskFromTaskInfo(tasks []RTaskJsonNode) {
 		// 	fmt.Println("*** nothing new test rendering task ***")
 		// }
 	}
-	if flag {
+	if nothingFlag {
 		fmt.Println("AddANewTaskFromTaskInfo() >>> nothing new test rendering task !!!!!!!")
 		var st message.RenderingSTChannelData
 		st.TaskID = 0
