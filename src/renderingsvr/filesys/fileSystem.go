@@ -37,6 +37,8 @@ type RenderingConfigParam struct {
 	Times      int64
 	Progress   int
 
+	RootDir string
+
 	ResourceType string
 	Models       string
 }
@@ -165,6 +167,9 @@ func CreateRenderingConfigFileToPath(path string, rendererPath string, param Ren
 				"name":"high-image-renderer",
 				"status":"stop"
 			},
+		"sys": {
+			"rootDir":"` + param.RootDir + `"
+		},
 		"resource":
 			{
 				"type": "` + param.ResourceType + `",

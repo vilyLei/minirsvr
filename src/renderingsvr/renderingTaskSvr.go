@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"renderingsvr.com/filesys"
 	"renderingsvr.com/message"
@@ -28,6 +29,8 @@ func main() {
 	rootDir, errOGT := os.Getwd()
 	if errOGT != nil {
 		fmt.Println("os.Getwd(), errOGT: %v", errOGT)
+	} else {
+		rootDir = strings.ReplaceAll(rootDir, `\`, `/`) + "/"
 	}
 	fmt.Println("rootDir: ", rootDir)
 
@@ -56,6 +59,7 @@ func main() {
 	var taskNode task.TaskExecNode
 	taskNode.Uid = 101
 	fmt.Println("renderingTaskSvr taskNode: ", taskNode)
+	svr.RootDir = rootDir
 	svr.AutoCheckRTask = false
 	if param0 == "auto" {
 		fmt.Println("auto checking rendering task")

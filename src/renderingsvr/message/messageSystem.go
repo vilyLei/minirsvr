@@ -10,6 +10,7 @@ type RenderingSTChannelData struct {
 	PathDir  string
 	TaskName string
 	ResUrl   string
+	RootDir  string
 	StType   int
 	Flag     int
 	TaskID   int64

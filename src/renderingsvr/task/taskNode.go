@@ -117,12 +117,13 @@ func getCmdParamsString(rendererExeName string, paths ...string) string {
 	return cmdParams
 }
 
-func StartupATask(resDirPath string, rendererPath string, taskID int64, times int64, taskName string, resUrl string) {
+func StartupATask(rootDir string, resDirPath string, rendererPath string, taskID int64, times int64, taskName string, resUrl string) {
 
 	fmt.Println("StartupATask(), resDirPath: ", resDirPath)
 
 	hasStatusDir := filesys.HasSceneResDir(resDirPath)
 	fmt.Println("#### ### hasStatusDir: ", hasStatusDir)
+	fmt.Println("#### ### rootDir: ", rootDir)
 
 	var configParam filesys.RenderingConfigParam
 	configParam.ResourceType = "none"
@@ -130,6 +131,7 @@ func StartupATask(resDirPath string, rendererPath string, taskID int64, times in
 	configParam.TaskID = taskID
 	configParam.Times = times
 	configParam.Progress = 0
+	configParam.RootDir = rootDir
 	configParam.OutputPath = ""
 	if !hasStatusDir {
 		flag := filesys.CreateDirWithPath(resDirPath)
@@ -192,6 +194,7 @@ type TaskExecNode struct {
 	ReqProgress int
 	Progress    int
 	TaskOutput  TaskOutputParam
+	RootDir     string
 }
 
 func (self *TaskExecNode) Init() *TaskExecNode {
@@ -202,6 +205,7 @@ func (self *TaskExecNode) Init() *TaskExecNode {
 	self.TaskName = ""
 	self.ResUrl = ""
 	self.FilePath = "renderingStatus.json"
+	self.RootDir = ""
 	self.RunningStatus = 0
 	self.TaskID = 1
 	self.Phase = "running"
@@ -341,7 +345,7 @@ func (self *TaskExecNode) Exec() *TaskExecNode {
 					flag := filesys.RemoveFileWithPath(filePath)
 					fmt.Println("Exec(), clear the rtask status info file, flag: ", flag, filePath)
 				}
-				go StartupATask(resDirPath, rendererPath, self.TaskID, self.Times, self.TaskName, self.ResUrl)
+				go StartupATask(self.RootDir, resDirPath, rendererPath, self.TaskID, self.Times, self.TaskName, self.ResUrl)
 			}
 		} else {
 			fmt.Println("Exec(), error:  self.pathDir is not empty.")

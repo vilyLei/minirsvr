@@ -20,6 +20,7 @@ import (
 
 // go mod init renderingsvr.com/svr
 var AutoCheckRTask = false
+var RootDir = ""
 
 func postFileToResSvr(filename string, svrUrl string, phase string, taskID int64, taskName string) error {
 	bodyBuf := &bytes.Buffer{}
@@ -161,6 +162,7 @@ func StartupTaskCheckingTicker(in <-chan message.RenderingSTChannelData) {
 					execNode.TaskName = st.TaskName
 					execNode.TaskID = st.TaskID
 					execNode.ResUrl = st.ResUrl
+					execNode.RootDir = st.RootDir
 					fmt.Println("	>>> execNode.TaskName: ", execNode.TaskName)
 					fmt.Println("	>>> execNode.ResUrl: ", execNode.ResUrl)
 				}
@@ -216,6 +218,7 @@ func AddANewTaskFromTaskInfo(tasks []RTaskJsonNode) {
 				st.TaskID = task.Id
 				st.TaskName = task.Name
 				st.ResUrl = task.ResUrl
+				st.RootDir = RootDir
 				st.StType = 1
 				st.Flag = 1
 				taskMap[task.Name] = &st
