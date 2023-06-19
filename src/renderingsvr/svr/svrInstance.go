@@ -386,7 +386,7 @@ func Init(portStr string) {
 	taskMap = make(map[string]*message.RenderingSTChannelData)
 
 	svrRootUrl = "http://localhost:9090/"
-	svrRootUrl = "http://www.artvily.com:9093/"
+	// svrRootUrl = "http://www.artvily.com:9093/"
 	uploadSvrUrl = svrRootUrl + "uploadRTData"
 	taskReqSvrUrl = svrRootUrl + "renderingTask"
 
