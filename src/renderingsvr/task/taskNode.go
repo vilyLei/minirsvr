@@ -52,7 +52,6 @@ func loadRenderingRes(out chan<- int, param ResLoadParam) bool {
 	resp, loadErr := http.Get(resUrl)
 	if loadErr != nil {
 		fmt.Printf("load a file failed, loadErr: %v\n", loadErr)
-		// panic(loadErr)
 
 		out <- 0
 		return false
@@ -64,7 +63,6 @@ func loadRenderingRes(out chan<- int, param ResLoadParam) bool {
 		fmt.Printf("write a file failed,wErr: %v\n", wErr)
 
 		out <- 0
-		// panic(wErr)
 		return false
 	}
 	if len(data) < 300 {
@@ -113,7 +111,7 @@ func getCmdParamsString(rendererExeName string, paths ...string) string {
 
 	// cmdParams = `python D:\dev\webProj\voxblender\pysrc\programs\tutorials\bcRenderShell.py -- renderer=D:/programs/blender/blender.exe rmodule=D:/dev/webProj/voxblender/pysrc/programs/tutorials/modelFileRendering.py rtaskDir=D:/dev/webProj/voxblender/models/model02/`
 	fmt.Println("rtaskDir: ", rtaskDir)
-	cmdParams = `python D:\dev\webdev\voxblender\pysrc\programs\tutorials\bcRenderShell.py -- renderer=D:/programs/blender/blender.exe rmodule=D:/dev/webdev/voxblender/pysrc/programs/tutorials/modelFileRendering.py rtaskDir=` + rtaskDir
+	cmdParams = `python D:\dev\webProj\voxblender\pysrc\programs\tutorials\bcRenderShell.py -- renderer=D:/programs/blender/blender.exe rmodule=D:/dev/webProj/voxblender/pysrc/programs/tutorials/modelFileRendering.py rtaskDir=` + rtaskDir
 	return cmdParams
 }
 
