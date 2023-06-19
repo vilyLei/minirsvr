@@ -92,17 +92,10 @@ func startupRProxyTicker(out chan<- message.RenderingSTChannelData) {
 }
 func startupAutoCheckTaskTicker() {
 
-	for range time.Tick(10 * time.Second) {
+	for range time.Tick(5 * time.Second) {
 		ReadyAddANewTask("random-task")
 	}
 }
-
-// func startupAutoReqNewTaskTicker() {
-
-// 	for range time.Tick(10 * time.Second) {
-// 		// ReadyAddANewTask("random-task")
-// 	}
-// }
 
 func StartupTaskCheckingTicker(in <-chan message.RenderingSTChannelData) {
 
@@ -113,7 +106,8 @@ func StartupTaskCheckingTicker(in <-chan message.RenderingSTChannelData) {
 	execNode.TaskID = 1
 	execNode.Times = 1
 
-	for range time.Tick(1 * time.Second) {
+	// for range time.Tick(time.Second) {
+	for range time.Tick(500 * time.Millisecond) {
 
 		var st message.RenderingSTChannelData
 		status := execNode.RunningStatus
@@ -125,6 +119,7 @@ func StartupTaskCheckingTicker(in <-chan message.RenderingSTChannelData) {
 			execNode.CheckRendering()
 			if execNode.ReqProgress != execNode.Progress {
 				execNode.ReqProgress = execNode.Progress
+				fmt.Println("StartupTaskCheckingTicker() >>> execNode.ReqProgress: ", execNode.ReqProgress, "%")
 				NotifyTaskInfoToSvr("running", execNode.Progress, execNode.TaskID, execNode.TaskName)
 			}
 		default:
@@ -155,8 +150,11 @@ func StartupTaskCheckingTicker(in <-chan message.RenderingSTChannelData) {
 			switch st.Flag {
 			case 1:
 				fmt.Println("StartupTaskCheckingTicker() >>> get a new task.")
-				fmt.Println("StartupTaskCheckingTicker() >>> execNode.IsWaitingTask(): ", execNode.IsWaitingTask())
+				fmt.Println("StartupTaskCheckingTicker() >>> execNode.IsWaitingTask(): ", execNode.IsWaitingTask(), st.TaskName)
 				fmt.Println("StartupTaskCheckingTicker() >>> execNode.RunningStatus: ", execNode.RunningStatus)
+				if execNode.IsFree() {
+					execNode.RunningStatus = 5
+				}
 				if execNode.IsWaitingTask() {
 					execNode.RunningStatus = 1
 					execNode.TaskName = st.TaskName
@@ -167,7 +165,7 @@ func StartupTaskCheckingTicker(in <-chan message.RenderingSTChannelData) {
 					fmt.Println("	>>> execNode.ResUrl: ", execNode.ResUrl)
 				}
 			case 2:
-				fmt.Println("StartupTaskCheckingTicker() >>> ready add a new task, execNode.IsFree(): ", execNode.IsFree())
+				fmt.Println("StartupTaskCheckingTicker() >>> ready add a new task, execNode.IsFree(): ", execNode.IsFree(), st.TaskName)
 				if execNode.IsFree() {
 					execNode.RunningStatus = 5
 					go StartupATaskReq()
@@ -266,17 +264,6 @@ func StartSvr(portStr string) {
 	router.Run(":" + portStr)
 }
 
-/*
-	{
-		"tasks":[
-			{
-				"id": 1001,
-				"name":"modelTask01",
-				"resUrl:"http://www.artvily.com/static/assets/obj/base.obj"
-			}
-		]
-	}
-*/
 type RTaskJsonNode struct {
 	Id     int64  `json:"id"`
 	Name   string `json:"name"`
@@ -331,7 +318,7 @@ func receiveATaskReq(data []byte) {
 			}
 			fmt.Println("receiveATaskReq(), task.ResUrl: ", task.ResUrl)
 			// var tasks := []RTaskJsonNode{task}
-			ReadyAddANewTask("atask")
+			// ReadyAddANewTask("anewtask")
 			AddANewTaskFromTaskInfo([]RTaskJsonNode{task})
 		} else {
 			fmt.Println("receiveATaskReq(), has not a new task.")
@@ -351,6 +338,10 @@ func NotifyTaskInfoToSvr(phase string, progress int, taskId int64, taskName stri
 	if err != nil {
 		flag = false
 		fmt.Printf("NotifyTaskInfoToSvr() get url failed, err: %v\n", err)
+		if phase == "reqanewrtask" {
+			AddANewTaskFromTaskInfo([]RTaskJsonNode{})
+		}
+
 	} else {
 		defer resp.Body.Close()
 	}
@@ -397,6 +388,8 @@ func Init(portStr string) {
 	svrRootUrl = "http://localhost:9090/"
 	uploadSvrUrl = svrRootUrl + "uploadRTData"
 	taskReqSvrUrl = svrRootUrl + "renderingTask"
+
+	task.TaskReqSvrUrl = taskReqSvrUrl
 
 	StartTaskMonitor()
 	StartSvr(portStr)
