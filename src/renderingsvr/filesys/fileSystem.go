@@ -109,7 +109,15 @@ func GetAllFilesNamesInCurrDir(dir string) []string {
 	}
 	return names
 }
+func GetFileNameSuffix(ns string) string {
 
+	if strings.Contains(ns, ".") {
+		parts := strings.Split(ns, ".")
+		pns := parts[len(parts)-1]
+		return strings.ToLower(pns)
+	}
+	return ""
+}
 func CheckPicFileInCurrDir(dir string) (bool, []string) {
 	// names := make([]string, 0)
 	var names []string = GetAllFilesNamesInCurrDir(dir)
@@ -117,10 +125,11 @@ func CheckPicFileInCurrDir(dir string) (bool, []string) {
 	var picNames []string
 
 	for _, ns := range names {
-		parts := strings.Split(ns, ".")
-		pns := parts[len(parts)-1]
-		pns = strings.ToLower(pns)
-		// fmt.Println("pns: ", pns)
+		// parts := strings.Split(ns, ".")
+		// pns := parts[len(parts)-1]
+		// pns = strings.ToLower(pns)
+		// // fmt.Println("pns: ", pns)
+		pns := GetFileNameSuffix(ns)
 		switch pns {
 		case "jpg", "jpeg", "png":
 			picNames = append(picNames, ns)
