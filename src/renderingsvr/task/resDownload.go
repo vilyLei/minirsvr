@@ -116,13 +116,13 @@ func DownloadFile(outChan chan<- int, fileDir string, url string, taskID int64, 
 			out.Close()
 			return nil
 		}
-		fmt.Println("data: ", data)
-		fmt.Println("data len: ", len(data))
+		// fmt.Println("data: ", data)
+		// fmt.Println("data len: ", len(data))
 		str := string(data)
-		fmt.Println("data to str: ", str)
 		strI := strings.Index(str, "Error:")
-		fmt.Println("strI: ", strI)
+		// fmt.Println("strI: ", strI)
 		if strI > 0 {
+			fmt.Println("data to str: ", str)
 			outChan <- 0
 			panic("load req error")
 			out.Close()

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"strconv"
 	"strings"
 )
 
@@ -29,32 +28,6 @@ import (
 "rendering-status":"task:running"
 }
 */
-type RenderingConfigParam struct {
-	Uuid       string
-	TaskID     int64
-	Name       string
-	OutputPath string
-	Times      int64
-	Progress   int
-
-	RootDir string
-
-	ResourceType string
-	Models       string
-}
-type RenderingTask struct {
-	Uuid     string `json:"uuid"`
-	TaskID   int64  `json:"taskID"`
-	Name     string `json:"name"`
-	Phase    string `json:"phase"`
-	Times    int64  `json:"times"`
-	Progress int    `json:"progress"`
-}
-type RenderingIns struct {
-	Rendering_ins    string        `json:"rendering-ins"`
-	Rendering_task   RenderingTask `json:"rendering-task"`
-	Rendering_status string        `json:"rendering-status"`
-}
 
 func PathExists(path string) (bool, error) {
 	_, err := os.Stat(path)
@@ -169,28 +142,40 @@ func CreateDirWithPath(path string) bool {
 }
 func CreateRenderingConfigFileToPath(path string, rendererPath string, param RenderingConfigParam) {
 
-	fileContent := `{
-		"renderer-proc":"` + rendererPath + `",
-		"renderer-instance":
-			{
-				"name":"high-image-renderer",
-				"status":"stop"
+	/*
+		sizes := param.Resolution
+		fileContent := `{
+			"renderer-proc":"` + rendererPath + `",
+			"renderer-instance":
+				{
+					"name":"high-image-renderer",
+					"status":"stop"
+				},
+			"sys": {
+				"rootDir":"` + param.RootDir + `"
 			},
-		"sys": {
-			"rootDir":"` + param.RootDir + `"
-		},
-		"resource":
-			{
-				"type": "` + param.ResourceType + `",
-				"models": ` + param.Models + `
-			},
-		"task":
-			{
-				"taskID": ` + strconv.FormatInt(param.TaskID, 10) + `,
-				"times": ` + strconv.FormatInt(param.Times, 10) + `,
-				"outputPath": "` + param.OutputPath + `"
-			}
-		}`
+			"resource":
+				{
+					"type": "` + param.ResourceType + `",
+					"models": ` + param.Models + `
+				},
+			"task":
+				{
+					"taskID": ` + strconv.FormatInt(param.TaskID, 10) + `,
+					"times": ` + strconv.FormatInt(param.Times, 10) + `,
+					"outputPath": "` + param.OutputPath + `",
+					"outputResolution": [` + strconv.Itoa(sizes[0]) + `,` + strconv.Itoa(sizes[1]) + `]
+				}
+			}`
+		//*/
+
+	var rcfg RenderTaskConfig
+	rcfg.Reset()
+	rcfg.SetValueFromParam(&param)
+	rcfg.RendererProc = rendererPath
+
+	fileContent := rcfg.GetJsonString()
+
 	filePath := path + "config.json"
 	file, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {

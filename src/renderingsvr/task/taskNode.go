@@ -26,6 +26,27 @@ type TaskOutputParam struct {
 	Error    bool
 }
 
+type TaskExecNode struct {
+	Uid           int64
+	Index         int
+	Desc          string
+	Phase         string
+	RunningStatus int
+	RstData       message.RenderingSTChannelData
+
+	PathDir     string
+	TaskName    string
+	ResUrl      string
+	FilePath    string
+	TaskID      int64
+	Times       int64
+	ReqProgress int
+	Progress    int
+	TaskOutput  TaskOutputParam
+	RootDir     string
+	Resolution  [2]int
+}
+
 func GetFileNameAndSuffixFromUrl(url string) (string, string) {
 	nameStr := url[strings.LastIndex(url, "/")+1 : len(url)]
 	i := strings.LastIndex(nameStr, "?")
@@ -63,9 +84,17 @@ func getCmdParamsString(rendererExeName string, paths ...string) string {
 	return cmdParams
 }
 
-func StartupATask(rootDir string, resDirPath string, rendererPath string, taskID int64, times int64, taskName string, resUrl string) {
+// func StartupATask(rootDir string, resDirPath string, rendererPath string, taskID int64, times int64, taskName string, resUrl string) {
+func StartupATask(rootDir string, resDirPath string, rendererPath string, rtNode TaskExecNode) {
 
 	fmt.Println("StartupATask(), resDirPath: ", resDirPath)
+
+	// taskID int64, times int64, taskName string, resUrl string
+
+	taskID := rtNode.TaskID
+	taskName := rtNode.TaskName
+	resUrl := rtNode.ResUrl
+	times := rtNode.Times
 
 	hasStatusDir := filesys.HasSceneResDir(resDirPath)
 	fmt.Println("#### ### hasStatusDir: ", hasStatusDir)
@@ -74,8 +103,9 @@ func StartupATask(rootDir string, resDirPath string, rendererPath string, taskID
 	NotifyTaskInfoToSvr("task_rendering_load_res", 0, taskID, taskName)
 
 	var configParam filesys.RenderingConfigParam
+	configParam.Resolution = rtNode.Resolution
 	configParam.ResourceType = "none"
-	configParam.Models = "[]"
+	configParam.Models = []string{""}
 	configParam.TaskID = taskID
 	configParam.Times = times
 	configParam.Progress = 0
@@ -113,7 +143,7 @@ func StartupATask(rootDir string, resDirPath string, rendererPath string, taskID
 	fmt.Println("StartupATask(), ready to load rendering resource finish !")
 	nameStr, suffix := GetFileNameAndSuffixFromUrl(resParam.Url)
 	configParam.ResourceType = suffix
-	configParam.Models = `["` + nameStr + `"]`
+	configParam.Models = []string{nameStr}
 	filesys.CreateRenderingConfigFileToPath(resDirPath, rendererPath, configParam)
 
 	fmt.Println("StartupATask(), ready exec the exe program !")
@@ -125,26 +155,6 @@ func StartupATask(rootDir string, resDirPath string, rendererPath string, taskID
 	NotifyTaskInfoToSvr("task_rendering_begin", 0, taskID, taskName)
 	cmd := exec.Command("cmd.exe", "/c", "start "+cmdParams)
 	cmd.Run()
-}
-
-type TaskExecNode struct {
-	Uid           int64
-	Index         int
-	Desc          string
-	Phase         string
-	RunningStatus int
-	RstData       message.RenderingSTChannelData
-
-	PathDir     string
-	TaskName    string
-	ResUrl      string
-	FilePath    string
-	TaskID      int64
-	Times       int64
-	ReqProgress int
-	Progress    int
-	TaskOutput  TaskOutputParam
-	RootDir     string
 }
 
 func (self *TaskExecNode) Init() *TaskExecNode {
@@ -295,7 +305,8 @@ func (self *TaskExecNode) Exec() *TaskExecNode {
 					flag := filesys.RemoveFileWithPath(filePath)
 					fmt.Println("Exec(), clear the rtask status info file, flag: ", flag, filePath)
 				}
-				go StartupATask(self.RootDir, resDirPath, rendererPath, self.TaskID, self.Times, self.TaskName, self.ResUrl)
+				// go StartupATask(self.RootDir, resDirPath, rendererPath, self.TaskID, self.Times, self.TaskName, self.ResUrl)
+				go StartupATask(self.RootDir, resDirPath, rendererPath, *self)
 			}
 		} else {
 			fmt.Println("Exec(), error:  self.pathDir is not empty.")

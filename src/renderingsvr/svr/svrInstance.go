@@ -161,6 +161,8 @@ func StartupTaskCheckingTicker(in <-chan message.RenderingSTChannelData) {
 					execNode.TaskID = st.TaskID
 					execNode.ResUrl = st.ResUrl
 					execNode.RootDir = st.RootDir
+					execNode.Resolution = st.Resolution
+					fmt.Println("	>>> execNode.Resolution: ", execNode.Resolution)
 					fmt.Println("	>>> execNode.TaskName: ", execNode.TaskName)
 					fmt.Println("	>>> execNode.ResUrl: ", execNode.ResUrl)
 				}
@@ -216,6 +218,7 @@ func AddANewTaskFromTaskInfo(tasks []RTaskJsonNode) {
 				st.TaskID = task.Id
 				st.TaskName = task.Name
 				st.ResUrl = task.ResUrl
+				st.Resolution = task.Resolution
 				st.RootDir = RootDir
 				st.StType = 1
 				st.Flag = 1
@@ -265,9 +268,10 @@ func StartSvr(portStr string) {
 }
 
 type RTaskJsonNode struct {
-	Id     int64  `json:"id"`
-	Name   string `json:"name"`
-	ResUrl string `json:"resUrl"`
+	Id         int64  `json:"id"`
+	Name       string `json:"name"`
+	ResUrl     string `json:"resUrl"`
+	Resolution [2]int `json:"resolution"`
 }
 type RTasksJson struct {
 	Tasks []RTaskJsonNode `json:"tasks"`
