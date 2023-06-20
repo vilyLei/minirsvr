@@ -2,8 +2,6 @@ package task
 
 import (
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"os"
 	"os/exec"
 	"strings"
@@ -28,14 +26,6 @@ type TaskOutputParam struct {
 	Error    bool
 }
 
-func GetFileNameFromUrl(url string) string {
-	nameStr := url[strings.LastIndex(url, "/")+1 : len(url)]
-	i := strings.LastIndex(nameStr, "?")
-	if i > 0 {
-		nameStr = nameStr[0:i]
-	}
-	return nameStr
-}
 func GetFileNameAndSuffixFromUrl(url string) (string, string) {
 	nameStr := url[strings.LastIndex(url, "/")+1 : len(url)]
 	i := strings.LastIndex(nameStr, "?")
@@ -44,50 +34,6 @@ func GetFileNameAndSuffixFromUrl(url string) (string, string) {
 	}
 	parts := strings.Split(nameStr, ".")
 	return nameStr, strings.ToLower(parts[1])
-}
-func loadRenderingRes(out chan<- int, param ResLoadParam) bool {
-
-	resUrl := param.Url
-	fmt.Println("loadRenderingRes(), resUrl: ", resUrl)
-
-	// Get the data
-	resp, loadErr := http.Get(resUrl)
-	if loadErr != nil {
-		fmt.Printf("load a file failed, loadErr: %v\n", loadErr)
-
-		out <- 0
-		return false
-	}
-	defer resp.Body.Close()
-
-	data, wErr := ioutil.ReadAll(resp.Body)
-	if wErr != nil {
-		fmt.Printf("write a file failed,wErr: %v\n", wErr)
-
-		out <- 0
-		return false
-	}
-	if len(data) < 300 {
-		fmt.Println("data: ", data)
-		fmt.Println("data len: ", len(data))
-		str := string(data)
-		fmt.Println("data to str: ", str)
-		strI := strings.Index(str, "Error:")
-		fmt.Println("strI: ", strI)
-		if strI > 0 {
-			out <- 0
-			panic("load error")
-			return false
-		}
-	}
-	nameStr := GetFileNameFromUrl(resUrl)
-	fmt.Println("remote res nameStr: ", nameStr)
-	fmt.Println("remote res pathDir: ", param.PathDir)
-	ioutil.WriteFile(param.PathDir+nameStr, data, 0777)
-
-	fmt.Println("load a remote res file success !!!")
-	out <- 1
-	return true
 }
 func getCmdParamsString(rendererExeName string, paths ...string) string {
 
@@ -113,7 +59,7 @@ func getCmdParamsString(rendererExeName string, paths ...string) string {
 
 	// cmdParams = `python D:\dev\webProj\voxblender\pysrc\programs\tutorials\bcRenderShell.py -- renderer=D:/programs/blender/blender.exe rmodule=D:/dev/webProj/voxblender/pysrc/programs/tutorials/modelFileRendering.py rtaskDir=D:/dev/webProj/voxblender/models/model02/`
 	fmt.Println("rtaskDir: ", rtaskDir)
-	cmdParams = `python D:\dev\webdev\voxblender\pysrc\programs\tutorials\bcRenderShell.py -- renderer=D:/programs/blender/blender.exe rmodule=D:/dev/webdev/voxblender/pysrc/programs/tutorials/modelFileRendering.py rtaskDir=` + rtaskDir
+	cmdParams = `python D:\dev\webProj\voxblender\pysrc\programs\tutorials\bcRenderShell.py -- renderer=D:/programs/blender/blender.exe rmodule=D:/dev/webProj/voxblender/pysrc/programs/tutorials/modelFileRendering.py rtaskDir=` + rtaskDir
 	return cmdParams
 }
 
@@ -150,10 +96,12 @@ func StartupATask(rootDir string, resDirPath string, rendererPath string, taskID
 	var resParam ResLoadParam
 	// resParam.Url = "http://www.artvily.com/static/assets/obj/base.obj"
 	// resParam.Url = "http://www.artvily.com/static/assets/obj/cylinder_obj.zip"
+
 	resParam.Url = resUrl
 	resParam.TaskName = taskName
 	resParam.PathDir = resDirPath
-	go loadRenderingRes(loaderChannel, resParam)
+	// go loadRenderingRes(loaderChannel, resParam)
+	go DownloadFile(loaderChannel, resDirPath, resUrl, taskID, taskName)
 
 	for flag := range loaderChannel {
 		len := len(loaderChannel)
