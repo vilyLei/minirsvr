@@ -59,7 +59,9 @@ func GetLocalSysCfg() {
 		}
 	}
 }
-
+func GetRenderCMD(rtaskDir string) string {
+	return LocalSysCfg.GetRenderCMD(rtaskDir)
+}
 func RemoveFileWithPath(filePath string) bool {
 	err := os.Remove(filePath)
 	return !(err != nil)

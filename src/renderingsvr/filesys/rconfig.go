@@ -124,9 +124,15 @@ func (self *RenderTaskConfig) GetJsonString() string {
 }
 
 type LocalSysConfigRenderer struct {
-	MainProc    string `json:"mainProc"`
-	RenererProc string `json:"renererProc"`
+	MainProc     string `json:"mainProc"`
+	RenerderProc string `json:"renererdProc"`
 }
 type LocalSysConfig struct {
 	Renderer LocalSysConfigRenderer `json:"renderer"`
+}
+
+func (self *LocalSysConfig) GetRenderCMD(rtaskDir string) string {
+	r := &self.Renderer
+	cmd := r.MainProc + " -- " + r.RenerderProc + " rtaskDir=" + rtaskDir
+	return cmd
 }
