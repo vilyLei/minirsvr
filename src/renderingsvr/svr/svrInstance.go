@@ -357,6 +357,8 @@ func NotifyTaskInfoToSvr(phase string, progress int, taskId int64, taskName stri
 				fmt.Println("NotifyTaskInfoToSvr() receive running req info, ", string(data))
 			case "finish":
 				fmt.Println("NotifyTaskInfoToSvr() receive finish req info, ", string(data))
+			case "re-rendering":
+				fmt.Println("NotifyTaskInfoToSvr() re-rendering finish req info, ", string(data))
 			case "rtaskerror":
 				fmt.Println("NotifyTaskInfoToSvr() receive rendering task error req info, ", string(data))
 			case "reqanewrtask":

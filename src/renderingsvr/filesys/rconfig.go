@@ -40,6 +40,7 @@ type RenderingConfigParam struct {
 	OutputPath string
 	Times      int64
 	Progress   int
+	Phase      string
 
 	Resolution [2]int
 

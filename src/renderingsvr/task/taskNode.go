@@ -31,6 +31,7 @@ type TaskExecNode struct {
 	Index         int
 	Desc          string
 	Phase         string
+	Action        string
 	RunningStatus int
 	RstData       message.RenderingSTChannelData
 
@@ -167,6 +168,7 @@ func (self *TaskExecNode) Init() *TaskExecNode {
 	self.RunningStatus = 0
 	self.TaskID = 1
 	self.Phase = "running"
+	self.Action = "new"
 	self.Times = 1
 	self.ReqProgress = 0
 	self.Progress = 0
