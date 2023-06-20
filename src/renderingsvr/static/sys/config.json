@@ -1,0 +1,21 @@
+{
+	"renderer-proc": "./renderer.exe",
+	"renderer-instance": {
+		"name": "high-image-renderer",
+		"status": "stop"
+	},
+	"sys": {
+		"rootDir": "D:/dev/webdev/minirsvr/src/renderingsvr/"
+	},
+	"resource": {
+		"type": "glb",
+		"models": [
+			"boomBox.glb"
+		]
+	},
+	"task": {
+		"taskID": 2003,
+		"times": 4,
+		"outputPath": ""
+	}
+}

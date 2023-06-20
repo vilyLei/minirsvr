@@ -39,6 +39,27 @@ func PathExists(path string) (bool, error) {
 	}
 	return false, err
 }
+
+var LocalSysCfg LocalSysConfig
+
+func GetLocalSysCfg() {
+	filePath := "static/sys/local/config.json"
+	hasFilePath, _ := PathExists(filePath)
+	if hasFilePath {
+		jsonFile, err := os.OpenFile(filePath, os.O_RDONLY, os.ModeDevice)
+		if err == nil {
+			defer jsonFile.Close()
+			jsonValue, _ := ioutil.ReadAll(jsonFile)
+
+			err = json.Unmarshal([]byte(jsonValue), &LocalSysCfg)
+			if err != nil {
+				fmt.Printf("GetLocalSysCfg() Unmarshal failed, err: %v\n", err)
+			}
+			fmt.Println("GetLocalSysCfg(), LocalSysCfg: ", LocalSysCfg)
+		}
+	}
+}
+
 func RemoveFileWithPath(filePath string) bool {
 	err := os.Remove(filePath)
 	return !(err != nil)

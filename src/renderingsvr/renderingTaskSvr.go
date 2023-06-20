@@ -47,6 +47,8 @@ func main() {
 		fmt.Println("param0: ", param0)
 	}
 
+	filesys.GetLocalSysCfg()
+
 	message.Init()
 	resDirPath := ".\\static\\sceneres\\scene01\\"
 	flagBool, _ := filesys.PathExists(resDirPath)

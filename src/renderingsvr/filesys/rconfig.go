@@ -122,3 +122,11 @@ func (self *RenderTaskConfig) GetJsonString() string {
 	}
 	return string(jsonBytes)
 }
+
+type LocalSysConfigRenderer struct {
+	MainProc    string `json:"mainProc"`
+	RenererProc string `json:"renererProc"`
+}
+type LocalSysConfig struct {
+	Renderer LocalSysConfigRenderer `json:"renderer"`
+}
