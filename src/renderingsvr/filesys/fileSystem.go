@@ -11,24 +11,6 @@ import (
 
 // go mod init renderingsvr.com/filesys
 
-/*
-{
-"rendering-ins":"jetty-scene-renderer",
-"rendering-task":
-
-	{
-	    "uuid":"rtrt88970-8990",
-	    "taskID":1005,
-	    "name":"high-image-rendering",
-	    "phase":"finish",
-	    "times":15
-	    "progress":25
-	},
-
-"rendering-status":"task:running"
-}
-*/
-
 func PathExists(path string) (bool, error) {
 	_, err := os.Stat(path)
 	if err == nil {
@@ -121,10 +103,6 @@ func CheckPicFileInCurrDir(dir string) (bool, []string) {
 	var picNames []string
 
 	for _, ns := range names {
-		// parts := strings.Split(ns, ".")
-		// pns := parts[len(parts)-1]
-		// pns = strings.ToLower(pns)
-		// // fmt.Println("pns: ", pns)
 		pns := GetFileNameSuffix(ns)
 		switch pns {
 		case "jpg", "jpeg", "png":
@@ -165,33 +143,6 @@ func CreateDirWithPath(path string) bool {
 }
 func CreateRenderingConfigFileToPath(path string, rendererPath string, param RenderingConfigParam) {
 
-	/*
-		sizes := param.Resolution
-		fileContent := `{
-			"renderer-proc":"` + rendererPath + `",
-			"renderer-instance":
-				{
-					"name":"high-image-renderer",
-					"status":"stop"
-				},
-			"sys": {
-				"rootDir":"` + param.RootDir + `"
-			},
-			"resource":
-				{
-					"type": "` + param.ResourceType + `",
-					"models": ` + param.Models + `
-				},
-			"task":
-				{
-					"taskID": ` + strconv.FormatInt(param.TaskID, 10) + `,
-					"times": ` + strconv.FormatInt(param.Times, 10) + `,
-					"outputPath": "` + param.OutputPath + `",
-					"outputResolution": [` + strconv.Itoa(sizes[0]) + `,` + strconv.Itoa(sizes[1]) + `]
-				}
-			}`
-		//*/
-
 	var rcfg RenderTaskConfig
 	rcfg.Reset()
 	rcfg.SetValueFromParam(&param)
@@ -206,15 +157,11 @@ func CreateRenderingConfigFileToPath(path string, rendererPath string, param Ren
 		return
 	}
 	defer file.Close()
-	// 写入内容
-	// str := "a text info data.\n" // \n\r表示换行  txt文件要看到换行效果要用 \r\n
-	// 写入时，使用带缓存的 *Writer
+
 	writer := bufio.NewWriter(file)
-	// for i := 0; i < 3; i++ {
+
 	writer.WriteString(fileContent)
-	// }
-	//因为 writer 是带缓存的，因此在调用 WriterString 方法时，内容是先写入缓存的
-	//所以要调用 flush方法，将缓存的数据真正写入到文件中。
+
 	writer.Flush()
 	fmt.Println("CreateRenderingConfigFileToPath(), success !!!")
 }
