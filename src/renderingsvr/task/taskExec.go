@@ -124,6 +124,7 @@ func StartupATask(rootDir string, resDirPath string, rendererPath string, rtNode
 	nameStr, suffix := GetFileNameAndSuffixFromUrl(resParam.Url)
 	configParam.ResourceType = suffix
 	configParam.Models = []string{nameStr}
+	// 这里应该加一个锁
 	filesys.CreateRenderingConfigFileToPath(resDirPath, rendererPath, configParam)
 
 	fmt.Println("StartupATask(), ready exec the exe program !")
