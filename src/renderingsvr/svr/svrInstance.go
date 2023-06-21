@@ -293,7 +293,7 @@ func receiveATaskReq(data []byte) {
 func NotifyTaskInfoToSvr(phase string, progress int, taskId int64, taskName string) {
 	progressStr := strconv.Itoa(progress)
 	taskIdStr := strconv.FormatInt(taskId, 10)
-	url := taskReqSvrUrl + "?phase=" + phase + "&progress=" + progressStr
+	url := taskReqSvrUrl + "?srcType=renderer&phase=" + phase + "&progress=" + progressStr
 	if taskId > 0 {
 		url += "&taskid=" + taskIdStr + "&taskname=" + taskName
 	}

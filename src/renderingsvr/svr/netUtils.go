@@ -41,7 +41,7 @@ func postFileToResSvr(filename string, svrUrl string, phase string, taskID int64
 	url := svrUrl
 	if taskID > 0 {
 		taskIDStr := strconv.FormatInt(taskID, 10)
-		url += "?phase=" + phase + "&taskid=" + taskIDStr + "&taskname=" + taskName
+		url += "?srcType=renderer&phase=" + phase + "&taskid=" + taskIDStr + "&taskname=" + taskName
 	}
 
 	resp, err := http.Post(url, contentType, bodyBuf)
