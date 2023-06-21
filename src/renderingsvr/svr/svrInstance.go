@@ -161,6 +161,7 @@ func StartupTaskCheckingTicker(in <-chan message.RenderingSTChannelData) {
 					execNode.TaskID = st.TaskID
 					execNode.ResUrl = st.ResUrl
 					execNode.RootDir = st.RootDir
+					execNode.Action = st.TaskAction
 					execNode.Resolution = st.Resolution
 					fmt.Println("	>>> execNode.Resolution: ", execNode.Resolution)
 					fmt.Println("	>>> execNode.TaskName: ", execNode.TaskName)
@@ -206,23 +207,29 @@ func AddANewTaskFromTaskInfo(tasks []RTaskJsonNode) {
 	total := len(tasks)
 	nothingFlag := true
 	if total > 0 {
-		var task RTaskJsonNode
-		task.Name = ""
+		var tk *RTaskJsonNode = nil
 		for i := 0; i < total; i++ {
 
-			flag := HasTaskByName(tasks[i].Name)
+			tk = &tasks[i]
+			flag := HasTaskByName(tk.Name)
+			if flag {
+				if tk.Action == "query-re-rendering-task" {
+					fmt.Println("AddANewTaskFromTaskInfo() >>> have a re-rendering task:", tk)
+					flag = false
+				}
+			}
 			if !flag {
-				task = tasks[i]
-				fmt.Println("AddANewTaskFromTaskInfo() >>> got a new task:", task)
+				fmt.Println("AddANewTaskFromTaskInfo() >>> got a new task:", tk)
 				var st message.RenderingSTChannelData
-				st.TaskID = task.Id
-				st.TaskName = task.Name
-				st.ResUrl = task.ResUrl
-				st.Resolution = task.Resolution
+				st.TaskID = tk.Id
+				st.TaskName = tk.Name
+				st.TaskAction = tk.Action
+				st.ResUrl = tk.ResUrl
+				st.Resolution = tk.Resolution
 				st.RootDir = RootDir
 				st.StType = 1
 				st.Flag = 1
-				taskMap[task.Name] = &st
+				taskMap[tk.Name] = &st
 				message.STRenderingCh <- st
 				nothingFlag = false
 				break
@@ -265,21 +272,6 @@ func StartSvr(portStr string) {
 		c.String(http.StatusOK, fmt.Sprintf("This task is currently executing now."))
 	})
 	router.Run(":" + portStr)
-}
-
-type RTaskJsonNode struct {
-	Id         int64  `json:"id"`
-	Name       string `json:"name"`
-	ResUrl     string `json:"resUrl"`
-	Resolution [2]int `json:"resolution"`
-}
-type RTasksJson struct {
-	Tasks []RTaskJsonNode `json:"tasks"`
-}
-type RTaskJson struct {
-	Phase  string        `json:"phase"`
-	Task   RTaskJsonNode `json:"task"`
-	Status int           `json:"status"`
 }
 
 func receiveTasksReq(data []byte) {

@@ -9,6 +9,7 @@ import (
 type RenderingSTChannelData struct {
 	PathDir    string
 	TaskName   string
+	TaskAction string
 	ResUrl     string
 	RootDir    string
 	StType     int

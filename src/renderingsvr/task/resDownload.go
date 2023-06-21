@@ -9,6 +9,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"renderingsvr.com/filesys"
 )
 
 var fileTotalBytes uint64 = 1
@@ -80,17 +82,28 @@ func (self *WriteCounter) PrintProgress() {
 // DownloadFile will download a url to a local file. It's efficient because it will
 // write as it downloads and not load the whole file into memory. We pass an io.TeeReader
 // into Copy() to report progress on the download.
+
 func DownloadFile(outChan chan<- int, fileDir string, url string, taskID int64, taskName string) error {
 
 	nameStr := GetFileNameFromUrl(url)
 	// Create the file, but give it a tmp file extension, this means we won't overwrite a
 	// file until it's downloaded, but we'll remove the tmp extension once downloaded.
-	out, err := os.Create(fileDir + nameStr + ".tmp")
-	if err != nil {
+	// out, err := os.Create(fileDir + nameStr + ".tmp")
+	// if err != nil {
+	// 	if outChan != nil {
+	// 		outChan <- 0
+	// 	}
+	// 	return err
+	// }
+
+	filePath := fileDir + nameStr
+	hasFilePath, _ := filesys.PathExists(filePath)
+	if hasFilePath {
 		if outChan != nil {
-			outChan <- 0
+			outChan <- 1
 		}
-		return err
+		fmt.Println("The model file exist, filePath: ", filePath)
+		return nil
 	}
 
 	// Get the data
@@ -99,7 +112,7 @@ func DownloadFile(outChan chan<- int, fileDir string, url string, taskID int64, 
 		if outChan != nil {
 			outChan <- 0
 		}
-		out.Close()
+		// out.Close()
 		return err
 	}
 	defer resp.Body.Close()
@@ -113,7 +126,7 @@ func DownloadFile(outChan chan<- int, fileDir string, url string, taskID int64, 
 		if wErr != nil {
 			fmt.Printf("write a file failed,wErr: %v\n", wErr)
 			outChan <- 0
-			out.Close()
+			// out.Close()
 			return nil
 		}
 		// fmt.Println("data: ", data)
@@ -124,21 +137,32 @@ func DownloadFile(outChan chan<- int, fileDir string, url string, taskID int64, 
 		if strI > 0 {
 			fmt.Println("data to str: ", str)
 			outChan <- 0
-			panic("load req error")
-			out.Close()
+			fmt.Println("load req error !!!")
+			// panic("load req error")
+			// out.Close()
 			return nil
 		} else {
 			fmt.Println("remote res nameStr: ", nameStr)
 			fmt.Println("remote res pathDir: ", fileDir)
-			ioutil.WriteFile(fileDir+nameStr, data, 0777)
+			ioutil.WriteFile(filePath, data, 0777)
 
 			fmt.Println("load a remote res file success !!!")
 			outChan <- 1
-			out.Close()
+			// out.Close()
 			return nil
 		}
 	}
 	fmt.Println("download fileTotalBytes: ", fileTotalBytes)
+
+	// Create the file, but give it a tmp file extension, this means we won't overwrite a
+	// file until it's downloaded, but we'll remove the tmp extension once downloaded.
+	out, err := os.Create(filePath + ".tmp")
+	if err != nil {
+		if outChan != nil {
+			outChan <- 0
+		}
+		return err
+	}
 
 	// Create our progress reporter and pass it to be used alongside our writer
 	counter := &WriteCounter{}
@@ -159,7 +183,7 @@ func DownloadFile(outChan chan<- int, fileDir string, url string, taskID int64, 
 	// Close the file without defer so it can happen before Rename()
 	out.Close()
 
-	if err = os.Rename(fileDir+nameStr+".tmp", fileDir+nameStr); err != nil {
+	if err = os.Rename(filePath+".tmp", filePath); err != nil {
 		counter.ToFail()
 		counter.Reset()
 		return err

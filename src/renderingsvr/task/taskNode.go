@@ -3,8 +3,6 @@ package task
 import (
 	"fmt"
 	"os"
-	"os/exec"
-	"strings"
 
 	"renderingsvr.com/filesys"
 	"renderingsvr.com/message"
@@ -12,6 +10,7 @@ import (
 
 // go mod init renderingsvr.com/task
 
+/*
 var TaskReqSvrUrl string = ""
 
 type ResLoadParam struct {
@@ -25,6 +24,7 @@ type TaskOutputParam struct {
 	TaskID   int64
 	Error    bool
 }
+//*/
 
 type TaskExecNode struct {
 	Uid           int64
@@ -48,6 +48,7 @@ type TaskExecNode struct {
 	Resolution  [2]int
 }
 
+/*
 func GetFileNameAndSuffixFromUrl(url string) (string, string) {
 	nameStr := url[strings.LastIndex(url, "/")+1 : len(url)]
 	i := strings.LastIndex(nameStr, "?")
@@ -155,6 +156,8 @@ func StartupATask(rootDir string, resDirPath string, rendererPath string, rtNode
 	cmd := exec.Command("cmd.exe", "/c", "start "+cmdParams)
 	cmd.Run()
 }
+
+//*/
 
 func (self *TaskExecNode) Init() *TaskExecNode {
 	self.Uid = 0
@@ -290,6 +293,13 @@ func (self *TaskExecNode) Exec() *TaskExecNode {
 
 			self.PathDir = resDirPath
 			self.FilePath = self.PathDir + "renderingStatus.json"
+			// if the action is rerendering proc, remove the renderingStatus.json file
+			if self.Action == "query-re-rendering-task" {
+				// todo: chech the task has finished
+				filePath := resDirPath + "renderingStatus.json"
+				flag := filesys.RemoveFileWithPath(filePath)
+				fmt.Println("Exec(), query-re-rendering-task clear the rtask status info file, flag: ", flag, filePath)
+			}
 
 			self.Times++
 			self.Progress = 0
