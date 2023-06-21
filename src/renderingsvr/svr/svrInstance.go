@@ -1,14 +1,10 @@
 package svr
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
-	"mime/multipart"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -19,55 +15,6 @@ import (
 )
 
 // go mod init renderingsvr.com/svr
-var AutoCheckRTask = false
-var RootDir = ""
-
-func postFileToResSvr(filename string, svrUrl string, phase string, taskID int64, taskName string) error {
-	bodyBuf := &bytes.Buffer{}
-	bodyWriter := multipart.NewWriter(bodyBuf)
-
-	// this step is very important
-	fileWriter, err := bodyWriter.CreateFormFile("file", filename)
-	if err != nil {
-		fmt.Println("error writing to buffer")
-		return err
-	}
-
-	// open file handle
-	fh, err := os.Open(filename)
-	if err != nil {
-		fmt.Println("error opening file")
-		return err
-	}
-	defer fh.Close()
-
-	_, err = io.Copy(fileWriter, fh)
-	if err != nil {
-		return err
-	}
-
-	contentType := bodyWriter.FormDataContentType()
-	bodyWriter.Close()
-
-	url := svrUrl
-	if taskID > 0 {
-		taskIDStr := strconv.FormatInt(taskID, 10)
-		url += "?phase=" + phase + "&taskid=" + taskIDStr + "&taskname=" + taskName
-	}
-
-	resp, err := http.Post(url, contentType, bodyBuf)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	resp_body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-	fmt.Println("upload resp status: ", resp.Status)
-	fmt.Println("upload resp body: ", string(resp_body))
-	return nil
-}
 
 func ReadyAddANewTask(taskName string) {
 	var st message.RenderingSTChannelData
@@ -92,11 +39,30 @@ func startupRProxyTicker(out chan<- message.RenderingSTChannelData) {
 }
 func startupAutoCheckTaskTicker() {
 
-	for range time.Tick(5 * time.Second) {
+	for range time.Tick(2 * time.Second) {
 		ReadyAddANewTask("random-task")
 	}
 }
-
+func checkTaskOutput(op *task.TaskOutputParam) {
+	// op := &execNode.TaskOutput
+	if op.Error {
+		fmt.Println("StartupTaskCheckingTicker() >>> upload process failed !!!")
+		NotifyTaskInfoToSvr("rtaskerror", 100, op.TaskID, op.TaskName)
+		op.Error = false
+	} else if op.PicPath != "" {
+		// upload the rendering output pic to remote data svr
+		fmt.Println("StartupTaskCheckingTicker() >>> upload the rendering output pic to remote data svr.")
+		uploadErr := postFileToResSvr(op.PicPath, uploadSvrUrl, "finish", op.TaskID, op.TaskName)
+		if uploadErr == nil {
+			fmt.Println("StartupTaskCheckingTicker() >>> upload process success !!!")
+			// notify task finish into to the server
+			NotifyTaskInfoToSvr("finish", 100, op.TaskID, op.TaskName)
+		} else {
+			fmt.Println("StartupTaskCheckingTicker() >>> upload process failed !!!")
+		}
+		op.PicPath = ""
+	}
+}
 func StartupTaskCheckingTicker(in <-chan message.RenderingSTChannelData) {
 
 	// var nodes [8]TaskExecNode
@@ -119,29 +85,35 @@ func StartupTaskCheckingTicker(in <-chan message.RenderingSTChannelData) {
 			execNode.CheckRendering()
 			if execNode.ReqProgress != execNode.Progress {
 				execNode.ReqProgress = execNode.Progress
-				fmt.Println("StartupTaskCheckingTicker() >>> execNode.ReqProgress: ", execNode.ReqProgress, "%")
+				fmt.Println("StartupTaskCheckingTicker() >>> A execNode.ReqProgress: ", execNode.ReqProgress, "%")
 				NotifyTaskInfoToSvr("running", execNode.Progress, execNode.TaskID, execNode.TaskName)
+				if execNode.IsFree() {
+					checkTaskOutput(&execNode.TaskOutput)
+				}
 			}
 		default:
 			status = 0
-			op := &execNode.TaskOutput
-			if op.Error {
-				fmt.Println("StartupTaskCheckingTicker() >>> upload process failed !!!")
-				NotifyTaskInfoToSvr("rtaskerror", 100, op.TaskID, op.TaskName)
-				op.Error = false
-			} else if op.PicPath != "" {
-				// upload the rendering output pic to remote data svr
-				fmt.Println("StartupTaskCheckingTicker() >>> upload the rendering output pic to remote data svr.")
-				uploadErr := postFileToResSvr(op.PicPath, uploadSvrUrl, "finish", op.TaskID, op.TaskName)
-				if uploadErr == nil {
-					fmt.Println("StartupTaskCheckingTicker() >>> upload process success !!!")
-					// notify task finish into to the server
-					NotifyTaskInfoToSvr("finish", 100, op.TaskID, op.TaskName)
-				} else {
-					fmt.Println("StartupTaskCheckingTicker() >>> upload process failed !!!")
-				}
-				op.PicPath = ""
-			}
+			// if execNode.IsFree() {
+			// 	checkTaskOutput(&execNode.TaskOutput)
+			// }
+			// op := &execNode.TaskOutput
+			// if op.Error {
+			// 	fmt.Println("StartupTaskCheckingTicker() >>> upload process failed !!!")
+			// 	NotifyTaskInfoToSvr("rtaskerror", 100, op.TaskID, op.TaskName)
+			// 	op.Error = false
+			// } else if op.PicPath != "" {
+			// 	// upload the rendering output pic to remote data svr
+			// 	fmt.Println("StartupTaskCheckingTicker() >>> upload the rendering output pic to remote data svr.")
+			// 	uploadErr := postFileToResSvr(op.PicPath, uploadSvrUrl, "finish", op.TaskID, op.TaskName)
+			// 	if uploadErr == nil {
+			// 		fmt.Println("StartupTaskCheckingTicker() >>> upload process success !!!")
+			// 		// notify task finish into to the server
+			// 		NotifyTaskInfoToSvr("finish", 100, op.TaskID, op.TaskName)
+			// 	} else {
+			// 		fmt.Println("StartupTaskCheckingTicker() >>> upload process failed !!!")
+			// 	}
+			// 	op.PicPath = ""
+			// }
 		}
 
 		st = <-in
@@ -202,8 +174,6 @@ func HasTaskByName(ns string) bool {
 
 func AddANewTaskFromTaskInfo(tasks []RTaskJsonNode) {
 
-	// taskMap[node.name] = &node
-	// tasks := taskInfo.Tasks
 	total := len(tasks)
 	nothingFlag := true
 	if total > 0 {
@@ -235,17 +205,15 @@ func AddANewTaskFromTaskInfo(tasks []RTaskJsonNode) {
 				break
 			}
 		}
-		// if task.Name == "" {
-		// 	fmt.Println("*** nothing new test rendering task ***")
-		// }
 	}
 	if nothingFlag {
 		fmt.Println("AddANewTaskFromTaskInfo() >>> nothing new test rendering task !!!!!!!")
 		var st message.RenderingSTChannelData
-		st.TaskID = 0
-		st.TaskName = ""
-		st.ResUrl = ""
-		st.StType = 0
+		// st.TaskID = 0
+		// st.TaskName = ""
+		// st.ResUrl = ""
+		// st.StType = 0
+		st.Reset()
 		st.Flag = 11
 		message.STRenderingCh <- st
 	}

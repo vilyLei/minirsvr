@@ -18,6 +18,15 @@ type RenderingSTChannelData struct {
 	Resolution [2]int
 }
 
+func (self *RenderingSTChannelData) Reset() {
+
+	self.TaskID = 0
+	self.TaskName = ""
+	self.ResUrl = ""
+	self.StType = 0
+	self.Flag = 0
+}
+
 var STRenderingCh chan RenderingSTChannelData
 
 func Init() {

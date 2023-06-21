@@ -82,7 +82,11 @@ func (self *WriteCounter) PrintProgress() {
 // DownloadFile will download a url to a local file. It's efficient because it will
 // write as it downloads and not load the whole file into memory. We pass an io.TeeReader
 // into Copy() to report progress on the download.
-
+func CheckModelFileExists(fileDir string, url string) bool {
+	nameStr := GetFileNameFromUrl(url)
+	hasFilePath, _ := filesys.PathExists(fileDir + nameStr)
+	return hasFilePath
+}
 func DownloadFile(outChan chan<- int, fileDir string, url string, taskID int64, taskName string) error {
 
 	nameStr := GetFileNameFromUrl(url)

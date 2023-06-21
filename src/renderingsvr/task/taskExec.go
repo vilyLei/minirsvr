@@ -10,19 +10,19 @@ import (
 
 // go mod init renderingsvr.com/task
 
-var TaskReqSvrUrl string = ""
+// var TaskReqSvrUrl string = ""
 
-type ResLoadParam struct {
-	Url      string
-	TaskName string
-	PathDir  string
-}
-type TaskOutputParam struct {
-	PicPath  string
-	TaskName string
-	TaskID   int64
-	Error    bool
-}
+// type ResLoadParam struct {
+// 	Url      string
+// 	TaskName string
+// 	PathDir  string
+// }
+// type TaskOutputParam struct {
+// 	PicPath  string
+// 	TaskName string
+// 	TaskID   int64
+// 	Error    bool
+// }
 
 func GetFileNameAndSuffixFromUrl(url string) (string, string) {
 	nameStr := url[strings.LastIndex(url, "/")+1 : len(url)]
@@ -97,7 +97,6 @@ func StartupATask(rootDir string, resDirPath string, rendererPath string, rtNode
 	// fmt.Println("#### ### hasStatusFile: ", hasStatusFile)
 	// req remote rendering res
 	fmt.Println("StartupATask(), ready to load rendering resource !")
-	loaderChannel := make(chan int, 1)
 	var resParam ResLoadParam
 	// resParam.Url = "http://www.artvily.com/static/assets/obj/base.obj"
 	// resParam.Url = "http://www.artvily.com/static/assets/obj/cylinder_obj.zip"
@@ -107,15 +106,20 @@ func StartupATask(rootDir string, resDirPath string, rendererPath string, rtNode
 	resParam.PathDir = resDirPath
 	// check the file exists
 	// go loadRenderingRes(loaderChannel, resParam)
-	go DownloadFile(loaderChannel, resDirPath, resUrl, taskID, taskName)
+	if !CheckModelFileExists(resDirPath, resUrl) {
 
-	for flag := range loaderChannel {
-		len := len(loaderChannel)
-		if len == 0 {
-			fmt.Println("loader_channel flag: ", flag)
-			close(loaderChannel)
+		loaderChannel := make(chan int, 1)
+		go DownloadFile(loaderChannel, resDirPath, resUrl, taskID, taskName)
+
+		for flag := range loaderChannel {
+			len := len(loaderChannel)
+			if len == 0 {
+				fmt.Println("loader_channel flag: ", flag)
+				close(loaderChannel)
+			}
 		}
 	}
+
 	fmt.Println("StartupATask(), ready to load rendering resource finish !")
 	nameStr, suffix := GetFileNameAndSuffixFromUrl(resParam.Url)
 	configParam.ResourceType = suffix
