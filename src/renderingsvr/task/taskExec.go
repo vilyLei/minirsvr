@@ -89,7 +89,7 @@ func StartupATask(rootDir string, resDirPath string, rendererPath string, rtNode
 	if !hasStatusDir {
 		flag := filesys.CreateDirWithPath(resDirPath)
 		if flag {
-			filesys.CreateRenderingConfigFileToPath(resDirPath, rendererPath, configParam)
+			// filesys.CreateRenderingConfigFileToPath(resDirPath, rendererPath, configParam)
 		}
 	}
 
