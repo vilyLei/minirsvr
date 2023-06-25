@@ -80,6 +80,7 @@ func StartupATask(rootDir string, resDirPath string, rendererPath string, rtNode
 	var configParam filesys.RenderingConfigParam
 	configParam.Resolution = rtNode.Resolution
 	configParam.Camdvs = rtNode.Camdvs
+	configParam.BGTransparent = rtNode.BGTransparent
 	configParam.ResourceType = "none"
 	configParam.Models = []string{""}
 	configParam.TaskID = taskID
@@ -87,6 +88,7 @@ func StartupATask(rootDir string, resDirPath string, rendererPath string, rtNode
 	configParam.Progress = 0
 	configParam.RootDir = rootDir
 	configParam.OutputPath = ""
+
 	if !hasStatusDir {
 		flag := filesys.CreateDirWithPath(resDirPath)
 		if flag {

@@ -1,13 +1,14 @@
 package svr
 
 type RTaskJsonNode struct {
-	Id         int64       `json:"id"`
-	Name       string      `json:"name"`
-	ResUrl     string      `json:"resUrl"`
-	Resolution [2]int      `json:"resolution"`
-	Camdvs     [16]float64 `json:"camdvs"`
-	Phase      string      `json:"phase"`
-	Action     string      `json:"action"`
+	Id            int64       `json:"id"`
+	Name          string      `json:"name"`
+	ResUrl        string      `json:"resUrl"`
+	Resolution    [2]int      `json:"resolution"`
+	Camdvs        [16]float64 `json:"camdvs"`
+	BGTransparent int         `json:"bgTransparent"`
+	Phase         string      `json:"phase"`
+	Action        string      `json:"action"`
 }
 type RTasksJson struct {
 	Tasks []RTaskJsonNode `json:"tasks"`

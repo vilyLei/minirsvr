@@ -35,18 +35,19 @@ type TaskExecNode struct {
 	RunningStatus int
 	RstData       message.RenderingSTChannelData
 
-	PathDir     string
-	TaskName    string
-	ResUrl      string
-	FilePath    string
-	TaskID      int64
-	Times       int64
-	ReqProgress int
-	Progress    int
-	TaskOutput  TaskOutputParam
-	RootDir     string
-	Resolution  [2]int
-	Camdvs      [16]float64
+	PathDir       string
+	TaskName      string
+	ResUrl        string
+	FilePath      string
+	TaskID        int64
+	Times         int64
+	ReqProgress   int
+	Progress      int
+	TaskOutput    TaskOutputParam
+	RootDir       string
+	Resolution    [2]int
+	Camdvs        [16]float64
+	BGTransparent int
 }
 
 /*

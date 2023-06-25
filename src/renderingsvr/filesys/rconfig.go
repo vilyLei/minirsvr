@@ -42,8 +42,9 @@ type RenderingConfigParam struct {
 	Progress   int
 	Phase      string
 
-	Resolution [2]int
-	Camdvs     [16]float64
+	Resolution    [2]int
+	Camdvs        [16]float64
+	BGTransparent int
 
 	RootDir string
 
@@ -81,6 +82,7 @@ type RTC_Task struct {
 	OutputPath       string      `json:"outputPath"`
 	OutputResolution [2]int      `json:"outputResolution"`
 	Camdvs           [16]float64 `json:"camdvs"`
+	BGTransparent    int
 }
 type RenderTaskConfig struct {
 	RendererProc     string       `json:"renderer-proc"`
@@ -115,6 +117,7 @@ func (self *RenderTaskConfig) SetValueFromParam(param *RenderingConfigParam) {
 	task.OutputPath = param.OutputPath
 	task.OutputResolution = param.Resolution
 	task.Camdvs = param.Camdvs
+	task.BGTransparent = param.BGTransparent
 
 }
 func (self *RenderTaskConfig) GetJsonString() string {

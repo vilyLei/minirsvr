@@ -136,6 +136,8 @@ func StartupTaskCheckingTicker(in <-chan message.RenderingSTChannelData) {
 					execNode.Action = st.TaskAction
 					execNode.Resolution = st.Resolution
 					execNode.Camdvs = st.Camdvs
+					execNode.BGTransparent = st.BGTransparent
+
 					fmt.Println("	$$$->>> execNode.TaskID: ", execNode.TaskID)
 					fmt.Println("	$$$->>> execNode.Resolution: ", execNode.Resolution)
 					fmt.Println("	$$$->>> execNode.Camdvs: ", execNode.Camdvs)
@@ -200,6 +202,7 @@ func AddANewTaskFromTaskInfo(tasks []RTaskJsonNode) {
 				st.ResUrl = tk.ResUrl
 				st.Resolution = tk.Resolution
 				st.Camdvs = tk.Camdvs
+				st.BGTransparent = tk.BGTransparent
 				st.RootDir = RootDir
 				st.StType = 1
 				st.Flag = 1
