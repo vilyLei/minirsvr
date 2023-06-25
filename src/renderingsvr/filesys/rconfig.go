@@ -82,7 +82,7 @@ type RTC_Task struct {
 	OutputPath       string      `json:"outputPath"`
 	OutputResolution [2]int      `json:"outputResolution"`
 	Camdvs           [16]float64 `json:"camdvs"`
-	BGTransparent    int
+	BGTransparent    int         `json:"bgTransparent"`
 }
 type RenderTaskConfig struct {
 	RendererProc     string       `json:"renderer-proc"`
