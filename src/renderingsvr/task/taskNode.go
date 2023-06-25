@@ -205,7 +205,7 @@ func (self *TaskExecNode) CheckTaskStatus() (bool, int) {
 				self.Progress = progress
 
 				fmt.Println("CheckTaskStatus(), taskID: ", taskID, ", times: ", times)
-				fmt.Println("CheckTaskStatus(), ### progress: ", progress, "%")
+				fmt.Println("CheckTaskStatus(), ### progress: ", progress, "%", "taskID,self.TaskID, times == self.Times: ", taskID, self.TaskID, times == self.Times)
 				taskFlag := false
 				if taskID == self.TaskID && times == self.Times {
 					if progress >= 100 {
@@ -328,6 +328,8 @@ func (self *TaskExecNode) Exec() *TaskExecNode {
 func (self *TaskExecNode) CheckRendering() *TaskExecNode {
 	if self.RunningStatus == 2 {
 		flag, status := self.CheckTaskStatus()
+
+		fmt.Println("CheckRendering(), >>> flag, status: ", flag, status)
 		if flag {
 			if status == 1 {
 				fmt.Println("CheckRendering(), >>> rendering task process finish !!!")

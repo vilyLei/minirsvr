@@ -151,6 +151,10 @@ func CreateRenderingConfigFileToPath(path string, rendererPath string, param Ren
 	fileContent := rcfg.GetJsonString()
 
 	filePath := path + "config.json"
+	hasResDirPath, _ := PathExists(filePath)
+	if hasResDirPath {
+		os.Remove(filePath)
+	}
 	file, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
 		fmt.Printf("CreateRenderingConfigFileToPath(), err: %v\n", err)

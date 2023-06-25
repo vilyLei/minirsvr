@@ -136,10 +136,11 @@ func StartupTaskCheckingTicker(in <-chan message.RenderingSTChannelData) {
 					execNode.Action = st.TaskAction
 					execNode.Resolution = st.Resolution
 					execNode.Camdvs = st.Camdvs
-					fmt.Println("	>>> execNode.Resolution: ", execNode.Resolution)
-					fmt.Println("	>>> execNode.Camdvs: ", execNode.Camdvs)
-					fmt.Println("	>>> execNode.TaskName: ", execNode.TaskName)
-					fmt.Println("	>>> execNode.ResUrl: ", execNode.ResUrl)
+					fmt.Println("	$$$->>> execNode.TaskID: ", execNode.TaskID)
+					fmt.Println("	$$$->>> execNode.Resolution: ", execNode.Resolution)
+					fmt.Println("	$$$->>> execNode.Camdvs: ", execNode.Camdvs)
+					fmt.Println("	$$$->>> execNode.TaskName: ", execNode.TaskName)
+					fmt.Println("	$$$->>> execNode.ResUrl: ", execNode.ResUrl)
 				}
 			case 2:
 				fmt.Println("StartupTaskCheckingTicker() >>> ready add a new task, execNode.IsFree(): ", execNode.IsFree(), st.TaskName)
