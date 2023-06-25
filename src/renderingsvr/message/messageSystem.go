@@ -16,6 +16,7 @@ type RenderingSTChannelData struct {
 	Flag       int
 	TaskID     int64
 	Resolution [2]int
+	Camdvs     [16]float64
 }
 
 func (self *RenderingSTChannelData) Reset() {

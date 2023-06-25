@@ -46,6 +46,7 @@ type TaskExecNode struct {
 	TaskOutput  TaskOutputParam
 	RootDir     string
 	Resolution  [2]int
+	Camdvs      [16]float64
 }
 
 /*

@@ -135,7 +135,9 @@ func StartupTaskCheckingTicker(in <-chan message.RenderingSTChannelData) {
 					execNode.RootDir = st.RootDir
 					execNode.Action = st.TaskAction
 					execNode.Resolution = st.Resolution
+					execNode.Camdvs = st.Camdvs
 					fmt.Println("	>>> execNode.Resolution: ", execNode.Resolution)
+					fmt.Println("	>>> execNode.Camdvs: ", execNode.Camdvs)
 					fmt.Println("	>>> execNode.TaskName: ", execNode.TaskName)
 					fmt.Println("	>>> execNode.ResUrl: ", execNode.ResUrl)
 				}
@@ -196,6 +198,7 @@ func AddANewTaskFromTaskInfo(tasks []RTaskJsonNode) {
 				st.TaskAction = tk.Action
 				st.ResUrl = tk.ResUrl
 				st.Resolution = tk.Resolution
+				st.Camdvs = tk.Camdvs
 				st.RootDir = RootDir
 				st.StType = 1
 				st.Flag = 1
@@ -352,6 +355,7 @@ func Init(portStr string) {
 	taskMap = make(map[string]*message.RenderingSTChannelData)
 
 	svrRootUrl = "http://localhost:9090/"
+	svrRootUrl = "http://localhost:9091/"
 	// svrRootUrl = "http://www.artvily.com:9093/"
 	uploadSvrUrl = svrRootUrl + "uploadRTData"
 	taskReqSvrUrl = svrRootUrl + "renderingTask"

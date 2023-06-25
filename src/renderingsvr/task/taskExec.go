@@ -79,6 +79,7 @@ func StartupATask(rootDir string, resDirPath string, rendererPath string, rtNode
 
 	var configParam filesys.RenderingConfigParam
 	configParam.Resolution = rtNode.Resolution
+	configParam.Camdvs = rtNode.Camdvs
 	configParam.ResourceType = "none"
 	configParam.Models = []string{""}
 	configParam.TaskID = taskID
