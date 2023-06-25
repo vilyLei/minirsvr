@@ -96,18 +96,27 @@ func GetFileNameSuffix(ns string) string {
 	}
 	return ""
 }
-func CheckPicFileInCurrDir(dir string) (bool, []string) {
+func CheckPicFileInCurrDir(dir string, pic_type string) (bool, []string) {
 	// names := make([]string, 0)
 	var names []string = GetAllFilesNamesInCurrDir(dir)
 	flag := false
 	var picNames []string
-
-	for _, ns := range names {
-		pns := GetFileNameSuffix(ns)
-		switch pns {
-		case "jpg", "jpeg", "png":
-			picNames = append(picNames, ns)
-			flag = true
+	if pic_type == "" {
+		for _, ns := range names {
+			pns := GetFileNameSuffix(ns)
+			switch pns {
+			case "jpg", "jpeg", "png":
+				picNames = append(picNames, ns)
+				flag = true
+			}
+		}
+	} else {
+		for _, ns := range names {
+			pns := GetFileNameSuffix(ns)
+			if pns == pic_type {
+				picNames = append(picNames, ns)
+				flag = true
+			}
 		}
 	}
 	return flag, picNames

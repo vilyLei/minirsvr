@@ -179,6 +179,7 @@ func (self *TaskExecNode) Init() *TaskExecNode {
 	self.Progress = 0
 	self.TaskOutput.PicPath = ""
 	self.TaskOutput.Error = false
+	self.BGTransparent = 0
 	return self
 }
 func (self *TaskExecNode) Reset() *TaskExecNode {
@@ -220,7 +221,11 @@ func (self *TaskExecNode) CheckTaskStatus() (bool, int) {
 							fmt.Println("CheckTaskStatus(), >>> rendering task process has a error !!!")
 						} else {
 							// check output pic file
-							taskFlag, _ = filesys.CheckPicFileInCurrDir(self.PathDir)
+							pic_type := ""
+							if self.BGTransparent == 1 {
+								pic_type = "png"
+							}
+							taskFlag, _ = filesys.CheckPicFileInCurrDir(self.PathDir, pic_type)
 							fmt.Println("CheckTaskStatus(), >>> has output rendering pic: ", taskFlag)
 							if !taskFlag {
 								taskStatus = -1
@@ -241,7 +246,11 @@ func (self *TaskExecNode) CheckTaskStatus() (bool, int) {
 func (self *TaskExecNode) toTaskFinish() *TaskExecNode {
 
 	fmt.Println("toTaskFinish(), >>> pathDif: ", self.PathDir)
-	picFlag, picNames := filesys.CheckPicFileInCurrDir(self.PathDir)
+	pic_type := ""
+	if self.BGTransparent == 1 {
+		pic_type = "png"
+	}
+	picFlag, picNames := filesys.CheckPicFileInCurrDir(self.PathDir, pic_type)
 	self.TaskOutput.PicPath = ""
 	if picFlag {
 		// ready send the pic to a remote data center server
