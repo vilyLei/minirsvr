@@ -10,20 +10,6 @@ import (
 
 // go mod init renderingsvr.com/task
 
-// var TaskReqSvrUrl string = ""
-
-// type ResLoadParam struct {
-// 	Url      string
-// 	TaskName string
-// 	PathDir  string
-// }
-// type TaskOutputParam struct {
-// 	PicPath  string
-// 	TaskName string
-// 	TaskID   int64
-// 	Error    bool
-// }
-
 func GetFileNameAndSuffixFromUrl(url string) (string, string) {
 	nameStr := url[strings.LastIndex(url, "/")+1 : len(url)]
 	i := strings.LastIndex(nameStr, "?")

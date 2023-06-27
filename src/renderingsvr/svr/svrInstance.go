@@ -58,7 +58,6 @@ func uploadDrcsToSvr(execNode *task.TaskExecNode) {
 			if strings.Contains(fnames[i], ".drc") {
 				paths = append(paths, drcDir+fnames[i])
 			}
-			// fnames[i] = drcDir + fnames[i]
 		}
 		op := &execNode.TaskOutput
 		uploadErr := postFilesToResSvr(paths, uploadFilesSvrUrl, "modelToDrc", op.TaskID, op.TaskName)
@@ -70,7 +69,7 @@ func uploadDrcsToSvr(execNode *task.TaskExecNode) {
 	}
 }
 func checkTaskOutput(op *task.TaskOutputParam) {
-	// op := &execNode.TaskOutput
+
 	if op.Error {
 		fmt.Println("checkTaskOutput() >>> upload process failed !!!")
 		NotifyTaskInfoToSvr("rtaskerror", 100, op.TaskID, op.TaskName)
@@ -137,27 +136,6 @@ func StartupTaskCheckingTicker(in <-chan message.RenderingSTChannelData) {
 				}
 			}
 			status = 0
-			// if execNode.IsFree() {
-			// 	checkTaskOutput(&execNode.TaskOutput)
-			// }
-			// op := &execNode.TaskOutput
-			// if op.Error {
-			// 	fmt.Println("StartupTaskCheckingTicker() >>> upload process failed !!!")
-			// 	NotifyTaskInfoToSvr("rtaskerror", 100, op.TaskID, op.TaskName)
-			// 	op.Error = false
-			// } else if op.PicPath != "" {
-			// 	// upload the rendering output pic to remote data svr
-			// 	fmt.Println("StartupTaskCheckingTicker() >>> upload the rendering output pic to remote data svr.")
-			// 	uploadErr := postFileToResSvr(op.PicPath, uploadSvrUrl, "finish", op.TaskID, op.TaskName)
-			// 	if uploadErr == nil {
-			// 		fmt.Println("StartupTaskCheckingTicker() >>> upload process success !!!")
-			// 		// notify task finish into to the server
-			// 		NotifyTaskInfoToSvr("finish", 100, op.TaskID, op.TaskName)
-			// 	} else {
-			// 		fmt.Println("StartupTaskCheckingTicker() >>> upload process failed !!!")
-			// 	}
-			// 	op.PicPath = ""
-			// }
 		}
 
 		st = <-in
@@ -183,10 +161,6 @@ func StartupTaskCheckingTicker(in <-chan message.RenderingSTChannelData) {
 					execNode.Resolution = st.Resolution
 					execNode.Camdvs = st.Camdvs
 					execNode.BGTransparent = st.BGTransparent
-					// execNode.ModelExportDrcST = -1
-					// if execNode.CheckModelDrcStatus() == 0 {
-					// 	execNode.ModelExportDrcST = 0
-					// }
 
 					fmt.Println("	$$$->>> execNode.TaskID: ", execNode.TaskID)
 					fmt.Println("	$$$->>> execNode.Resolution: ", execNode.Resolution)
