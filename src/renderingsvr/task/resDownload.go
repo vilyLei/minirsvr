@@ -83,9 +83,13 @@ func (self *WriteCounter) PrintProgress() {
 // write as it downloads and not load the whole file into memory. We pass an io.TeeReader
 // into Copy() to report progress on the download.
 func CheckModelFileExists(fileDir string, url string) bool {
-	nameStr := GetFileNameFromUrl(url)
-	hasFilePath, _ := filesys.PathExists(fileDir + nameStr)
+	fpath := GetModelFilePath(fileDir, url)
+	hasFilePath, _ := filesys.PathExists(fpath)
 	return hasFilePath
+}
+func GetModelFilePath(fileDir string, url string) string {
+	nameStr := GetFileNameFromUrl(url)
+	return fileDir + nameStr
 }
 func DownloadFile(outChan chan<- int, fileDir string, url string, taskID int64, taskName string) error {
 

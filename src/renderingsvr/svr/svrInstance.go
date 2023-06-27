@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"renderingsvr.com/filesys"
 	"renderingsvr.com/message"
 	"renderingsvr.com/task"
 )
@@ -43,22 +45,46 @@ func startupAutoCheckTaskTicker() {
 		ReadyAddANewTask("random-task")
 	}
 }
+func uploadDrcsToSvr(execNode *task.TaskExecNode) {
+	// uploadFilesSvrUrl
+	if execNode.ModelExportDrcST != -1 {
+		fmt.Println("uploadDrcsToSvr() >>> upload drcs to remote data svr.")
+		drcDir := filepath.Dir(execNode.ResFilePath) + "/draco/"
+		var fnames []string = filesys.GetAllFilesNamesInCurrDir(drcDir)
+		total := len(fnames)
+		var paths []string
+		for i := 0; i < total; i++ {
+			fmt.Println("fnames[", i, "]: ", fnames[i])
+			if strings.Contains(fnames[i], ".drc") {
+				paths = append(paths, drcDir+fnames[i])
+			}
+			// fnames[i] = drcDir + fnames[i]
+		}
+		op := &execNode.TaskOutput
+		uploadErr := postFilesToResSvr(paths, uploadFilesSvrUrl, "modelToDrc", op.TaskID, op.TaskName)
+		if uploadErr == nil {
+			fmt.Println("uploadDrcsToSvr() >>> upload drc files success !!!")
+		} else {
+			fmt.Println("uploadDrcsToSvr() >>> upload drc files failed !!!")
+		}
+	}
+}
 func checkTaskOutput(op *task.TaskOutputParam) {
 	// op := &execNode.TaskOutput
 	if op.Error {
-		fmt.Println("StartupTaskCheckingTicker() >>> upload process failed !!!")
+		fmt.Println("checkTaskOutput() >>> upload process failed !!!")
 		NotifyTaskInfoToSvr("rtaskerror", 100, op.TaskID, op.TaskName)
 		op.Error = false
 	} else if op.PicPath != "" {
 		// upload the rendering output pic to remote data svr
-		fmt.Println("StartupTaskCheckingTicker() >>> upload the rendering output pic to remote data svr.")
+		fmt.Println("checkTaskOutput() >>> upload the rendering output pic to remote data svr.")
 		uploadErr := postFileToResSvr(op.PicPath, uploadSvrUrl, "finish", op.TaskID, op.TaskName)
 		if uploadErr == nil {
-			fmt.Println("StartupTaskCheckingTicker() >>> upload process success !!!")
+			fmt.Println("checkTaskOutput() >>> upload process success !!!")
 			// notify task finish into to the server
 			NotifyTaskInfoToSvr("finish", 100, op.TaskID, op.TaskName)
 		} else {
-			fmt.Println("StartupTaskCheckingTicker() >>> upload process failed !!!")
+			fmt.Println("checkTaskOutput() >>> upload process failed !!!")
 		}
 		op.PicPath = ""
 	}
@@ -77,12 +103,19 @@ func StartupTaskCheckingTicker(in <-chan message.RenderingSTChannelData) {
 
 		var st message.RenderingSTChannelData
 		status := execNode.RunningStatus
-
+		flag := 0
 		switch status {
 		case 1:
 			execNode.Exec()
 		case 2:
 			execNode.CheckRendering()
+			if execNode.ModelExportDrcST == 0 {
+				if execNode.CheckModelDrcStatus() == 1 {
+					fmt.Println("StartupTaskCheckingTicker() >>> AAA upload model drc files to svr.")
+					uploadDrcsToSvr(&execNode)
+					execNode.ModelExportDrcST = -1
+				}
+			}
 			if execNode.ReqProgress != execNode.Progress {
 				execNode.ReqProgress = execNode.Progress
 				fmt.Println("StartupTaskCheckingTicker() >>> A execNode.ReqProgress: ", execNode.ReqProgress, "%")
@@ -92,6 +125,16 @@ func StartupTaskCheckingTicker(in <-chan message.RenderingSTChannelData) {
 				}
 			}
 		default:
+			if execNode.ModelExportDrcST == 0 {
+				flag = execNode.CheckModelDrcStatus()
+				if flag != 0 {
+					if flag == 1 {
+						fmt.Println("StartupTaskCheckingTicker() >>> BBB upload model drc files to svr.")
+						uploadDrcsToSvr(&execNode)
+						execNode.ModelExportDrcST = -1
+					}
+				}
+			}
 			status = 0
 			// if execNode.IsFree() {
 			// 	checkTaskOutput(&execNode.TaskOutput)
@@ -118,7 +161,8 @@ func StartupTaskCheckingTicker(in <-chan message.RenderingSTChannelData) {
 
 		st = <-in
 		// fmt.Println("StartupTaskCheckingTicker() >>> ticker st.Flag : ", st.Flag)
-		if st.Flag > 0 {
+		fst := flag == 0 && st.Flag > 0
+		if fst {
 			switch st.Flag {
 			case 1:
 				fmt.Println("StartupTaskCheckingTicker() >>> get a new task.")
@@ -128,6 +172,7 @@ func StartupTaskCheckingTicker(in <-chan message.RenderingSTChannelData) {
 					execNode.RunningStatus = 5
 				}
 				if execNode.IsWaitingTask() {
+					execNode.Reset()
 					execNode.RunningStatus = 1
 					execNode.TaskName = st.TaskName
 					execNode.TaskID = st.TaskID
@@ -137,6 +182,10 @@ func StartupTaskCheckingTicker(in <-chan message.RenderingSTChannelData) {
 					execNode.Resolution = st.Resolution
 					execNode.Camdvs = st.Camdvs
 					execNode.BGTransparent = st.BGTransparent
+					execNode.ModelExportDrcST = -1
+					if execNode.CheckModelDrcStatus() == 0 {
+						execNode.ModelExportDrcST = 0
+					}
 
 					fmt.Println("	$$$->>> execNode.TaskID: ", execNode.TaskID)
 					fmt.Println("	$$$->>> execNode.Resolution: ", execNode.Resolution)
@@ -216,10 +265,6 @@ func AddANewTaskFromTaskInfo(tasks []RTaskJsonNode) {
 	if nothingFlag {
 		fmt.Println("AddANewTaskFromTaskInfo() >>> nothing new test rendering task !!!!!!!")
 		var st message.RenderingSTChannelData
-		// st.TaskID = 0
-		// st.TaskName = ""
-		// st.ResUrl = ""
-		// st.StType = 0
 		st.Reset()
 		st.Flag = 11
 		message.STRenderingCh <- st
@@ -351,6 +396,7 @@ func RequestANewTask() {
 }
 
 var uploadSvrUrl string = "http://localhost:9090/uploadRTData"
+var uploadFilesSvrUrl string = "http://localhost:9090/uploadRTFiles"
 var taskReqSvrUrl string = "http://localhost:9090/renderingTask"
 var svrRootUrl string = "http://localhost:9090/"
 
@@ -362,6 +408,7 @@ func Init(portStr string) {
 	svrRootUrl = "http://localhost:9091/"
 	// svrRootUrl = "http://www.artvily.com:9093/"
 	uploadSvrUrl = svrRootUrl + "uploadRTData"
+	uploadFilesSvrUrl = svrRootUrl + "uploadRTFiles"
 	taskReqSvrUrl = svrRootUrl + "renderingTask"
 
 	task.TaskReqSvrUrl = taskReqSvrUrl

@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"path/filepath"
 	"strconv"
 )
 
@@ -22,7 +23,7 @@ func uploadExample() {
 
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
-	part, _ := writer.CreateFormFile("file", filePath.Base(file.Name()))
+	part, _ := writer.CreateFormFile("file", filepath.Base(file.Name()))
 	io.Copy(part, file)
 	writer.Close()
 
@@ -123,6 +124,7 @@ func postFilesToResSvr(filePaths []string, svrUrl string, phase string, taskID i
 				return
 			}
 			defer f.Close()
+			fmt.Println("postFilesToResSvr(), f.Name(): ", f.Name())
 			if fw, err := m.CreateFormFile("files", f.Name()); err != nil {
 				return
 			} else {
@@ -133,13 +135,13 @@ func postFilesToResSvr(filePaths []string, svrUrl string, phase string, taskID i
 		}
 	}()
 
-	contentType = m.FormDataContentType()
+	contentType := m.FormDataContentType()
 
 	url := svrUrl
 	if taskID > 0 {
 		taskIDStr := strconv.FormatInt(taskID, 10)
 		url += "?srcType=renderer&phase=" + phase + "&taskid=" + taskIDStr + "&taskname=" + taskName
-		url += "&total" + strconv.FormatInt(len(filePaths), 10)
+		url += "&total" + strconv.Itoa(len(filePaths))
 	}
 
 	resp, err := http.Post(url, contentType, r)

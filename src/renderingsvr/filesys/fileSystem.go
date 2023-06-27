@@ -44,6 +44,9 @@ func GetLocalSysCfg() {
 func GetRenderCMD(rtaskDir string) string {
 	return LocalSysCfg.GetRenderCMD(rtaskDir)
 }
+func GetModelExportCMD(modelFilePath string) string {
+	return LocalSysCfg.GetModelExportCMD(modelFilePath)
+}
 func RemoveFileWithPath(filePath string) bool {
 	err := os.Remove(filePath)
 	return !(err != nil)

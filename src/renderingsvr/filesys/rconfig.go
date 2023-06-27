@@ -134,12 +134,22 @@ type LocalSysConfigRenderer struct {
 	MainProc     string `json:"mainProc"`
 	RenerderProc string `json:"renererdProc"`
 }
+type LocalSysConfigModelToDrc struct {
+	MainProc   string `json:"mainProc"`
+	ExportProc string `json:"exportProc"`
+}
 type LocalSysConfig struct {
-	Renderer LocalSysConfigRenderer `json:"renderer"`
+	Renderer   LocalSysConfigRenderer   `json:"renderer"`
+	ModelToDrc LocalSysConfigModelToDrc `json:"modelToDrc"`
 }
 
 func (self *LocalSysConfig) GetRenderCMD(rtaskDir string) string {
 	r := &self.Renderer
 	cmd := r.MainProc + " -- " + r.RenerderProc + " rtaskDir=" + rtaskDir
+	return cmd
+}
+func (self *LocalSysConfig) GetModelExportCMD(modelFilePath string) string {
+	m := &self.ModelToDrc
+	cmd := m.MainProc + " " + m.ExportProc + " modelFilePath=" + modelFilePath
 	return cmd
 }

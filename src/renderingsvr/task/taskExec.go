@@ -59,12 +59,19 @@ func getCmdParamsString(rendererExeName string, paths ...string) string {
 	return cmdParams
 }
 
-// func StartupATask(rootDir string, resDirPath string, rendererPath string, taskID int64, times int64, taskName string, resUrl string) {
+func execRenderer(cmdParams string) {
+	cmd := exec.Command("cmd.exe", "/c", "start "+cmdParams)
+	cmd.Run()
+}
+func execModelExport(modelFilePath string) {
+	cmdParams := filesys.GetModelExportCMD(modelFilePath)
+	fmt.Println("execModelExport(), exe cmdParams: ", cmdParams)
+	cmd := exec.Command("cmd.exe", "/c", "start "+cmdParams)
+	cmd.Run()
+}
 func StartupATask(rootDir string, resDirPath string, rendererPath string, rtNode TaskExecNode) {
 
 	fmt.Println("StartupATask(), resDirPath: ", resDirPath)
-
-	// taskID int64, times int64, taskName string, resUrl string
 
 	taskID := rtNode.TaskID
 	taskName := rtNode.TaskName
@@ -94,6 +101,11 @@ func StartupATask(rootDir string, resDirPath string, rendererPath string, rtNode
 		if flag {
 			// filesys.CreateRenderingConfigFileToPath(resDirPath, rendererPath, configParam)
 		}
+	}
+
+	if rtNode.CheckModelDrcStatus() == 0 {
+		fmt.Println("#### ### need exec export model to drc.")
+		execModelExport(GetModelFilePath(resDirPath, resUrl))
 	}
 
 	// hasStatusFile := filesys.HasSceneResStatusJson(resDirPath)
@@ -137,6 +149,5 @@ func StartupATask(rootDir string, resDirPath string, rendererPath string, rtNode
 	fmt.Println("StartupATask(), exe cmdParams: ", cmdParams)
 
 	NotifyTaskInfoToSvr("task_rendering_begin", 0, taskID, taskName)
-	cmd := exec.Command("cmd.exe", "/c", "start "+cmdParams)
-	cmd.Run()
+	execRenderer(cmdParams)
 }

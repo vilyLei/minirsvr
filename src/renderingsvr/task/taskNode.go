@@ -3,6 +3,7 @@ package task
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"renderingsvr.com/filesys"
 	"renderingsvr.com/message"
@@ -35,19 +36,21 @@ type TaskExecNode struct {
 	RunningStatus int
 	RstData       message.RenderingSTChannelData
 
-	PathDir       string
-	TaskName      string
-	ResUrl        string
-	FilePath      string
-	TaskID        int64
-	Times         int64
-	ReqProgress   int
-	Progress      int
-	TaskOutput    TaskOutputParam
-	RootDir       string
-	Resolution    [2]int
-	Camdvs        [16]float64
-	BGTransparent int
+	PathDir          string
+	TaskName         string
+	ResUrl           string
+	FilePath         string
+	TaskID           int64
+	Times            int64
+	ReqProgress      int
+	Progress         int
+	TaskOutput       TaskOutputParam
+	RootDir          string
+	Resolution       [2]int
+	Camdvs           [16]float64
+	BGTransparent    int
+	ModelExportDrcST int
+	ResFilePath      string
 }
 
 /*
@@ -180,6 +183,8 @@ func (self *TaskExecNode) Init() *TaskExecNode {
 	self.TaskOutput.PicPath = ""
 	self.TaskOutput.Error = false
 	self.BGTransparent = 0
+	self.ModelExportDrcST = -1
+	self.ResFilePath = ""
 	return self
 }
 func (self *TaskExecNode) Reset() *TaskExecNode {
@@ -242,6 +247,20 @@ func (self *TaskExecNode) CheckTaskStatus() (bool, int) {
 		}
 	}
 	return false, 0
+}
+func (self *TaskExecNode) CheckModelDrcStatus() int {
+
+	drcDir := filepath.Dir(self.ResFilePath) + "/draco/"
+	hasFilePath, _ := filesys.PathExists(drcDir + "status.json")
+	if hasFilePath {
+		return 1
+	}
+	hasFilePath, _ = filesys.PathExists(drcDir)
+	if hasFilePath {
+		return 2
+	}
+	fmt.Println("CheckModelDrcStatus(), >>> drcDir: ", drcDir)
+	return 0
 }
 func (self *TaskExecNode) toTaskFinish() *TaskExecNode {
 
@@ -326,6 +345,7 @@ func (self *TaskExecNode) Exec() *TaskExecNode {
 					flag := filesys.RemoveFileWithPath(filePath)
 					fmt.Println("Exec(), clear the rtask status info file, flag: ", flag, filePath)
 				}
+				self.ResFilePath = GetModelFilePath(resDirPath, self.ResUrl)
 				// go StartupATask(self.RootDir, resDirPath, rendererPath, self.TaskID, self.Times, self.TaskName, self.ResUrl)
 				go StartupATask(self.RootDir, resDirPath, rendererPath, *self)
 			}
