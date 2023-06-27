@@ -346,6 +346,14 @@ func (self *TaskExecNode) Exec() *TaskExecNode {
 					fmt.Println("Exec(), clear the rtask status info file, flag: ", flag, filePath)
 				}
 				self.ResFilePath = GetModelFilePath(resDirPath, self.ResUrl)
+
+				if self.CheckModelDrcStatus() == 0 {
+					self.ModelExportDrcST = 0
+				}
+
+				self.TaskOutput.TaskID = self.TaskID
+				self.TaskOutput.TaskName = self.TaskName
+
 				// go StartupATask(self.RootDir, resDirPath, rendererPath, self.TaskID, self.Times, self.TaskName, self.ResUrl)
 				go StartupATask(self.RootDir, resDirPath, rendererPath, *self)
 			}

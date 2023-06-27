@@ -97,7 +97,7 @@ func StartupTaskCheckingTicker(in <-chan message.RenderingSTChannelData) {
 	execNode.Index = 1
 	execNode.TaskID = 1
 	execNode.Times = 1
-
+	execNode.Reset()
 	// for range time.Tick(time.Second) {
 	for range time.Tick(500 * time.Millisecond) {
 
@@ -127,6 +127,7 @@ func StartupTaskCheckingTicker(in <-chan message.RenderingSTChannelData) {
 		default:
 			if execNode.ModelExportDrcST == 0 {
 				flag = execNode.CheckModelDrcStatus()
+				fmt.Println("StartupTaskCheckingTicker() >>> BBB flag: ", flag)
 				if flag != 0 {
 					if flag == 1 {
 						fmt.Println("StartupTaskCheckingTicker() >>> BBB upload model drc files to svr.")
@@ -161,7 +162,7 @@ func StartupTaskCheckingTicker(in <-chan message.RenderingSTChannelData) {
 
 		st = <-in
 		// fmt.Println("StartupTaskCheckingTicker() >>> ticker st.Flag : ", st.Flag)
-		fst := flag == 0 && st.Flag > 0
+		fst := (flag == 0 && st.Flag > 0) || st.Flag == 11
 		if fst {
 			switch st.Flag {
 			case 1:
@@ -182,10 +183,10 @@ func StartupTaskCheckingTicker(in <-chan message.RenderingSTChannelData) {
 					execNode.Resolution = st.Resolution
 					execNode.Camdvs = st.Camdvs
 					execNode.BGTransparent = st.BGTransparent
-					execNode.ModelExportDrcST = -1
-					if execNode.CheckModelDrcStatus() == 0 {
-						execNode.ModelExportDrcST = 0
-					}
+					// execNode.ModelExportDrcST = -1
+					// if execNode.CheckModelDrcStatus() == 0 {
+					// 	execNode.ModelExportDrcST = 0
+					// }
 
 					fmt.Println("	$$$->>> execNode.TaskID: ", execNode.TaskID)
 					fmt.Println("	$$$->>> execNode.Resolution: ", execNode.Resolution)
@@ -194,7 +195,7 @@ func StartupTaskCheckingTicker(in <-chan message.RenderingSTChannelData) {
 					fmt.Println("	$$$->>> execNode.ResUrl: ", execNode.ResUrl)
 				}
 			case 2:
-				fmt.Println("StartupTaskCheckingTicker() >>> ready add a new task, execNode.IsFree(): ", execNode.IsFree(), st.TaskName)
+				fmt.Println("StartupTaskCheckingTicker() >>> ready add a new task, execNode.IsFree(): ", execNode.IsFree(), st.TaskName, execNode.RunningStatus)
 				if execNode.IsFree() {
 					execNode.RunningStatus = 5
 					go StartupATaskReq()
