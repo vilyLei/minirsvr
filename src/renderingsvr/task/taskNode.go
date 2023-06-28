@@ -11,6 +11,10 @@ import (
 
 // go mod init renderingsvr.com/task
 
+type TaskTransformNode struct {
+	model [9]float64
+}
+
 type TaskExecNode struct {
 	Uid           int64
 	Index         int
