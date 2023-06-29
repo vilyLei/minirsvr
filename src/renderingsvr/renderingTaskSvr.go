@@ -25,7 +25,8 @@ import (
 // go run renderingTasksvr.go
 // go run renderingTasksvr.go 9092 auto
 // go run renderingTasksvr.go 9092 false remote-debug localProc
-// go run renderingTasksvr.go -port=9092 -auto=false -rsvr=remote-debug -proc=local
+// go run renderingTasksvr.go -- port=9092 auto=true rsvr=localhost proc=local
+// renderingTasksvr.exe -- port=9092 auto=true rsvr=localhost proc=local
 
 // 调用 http://localhost:9092/rendering 这个请求就可以本地测试渲染任务调度
 
