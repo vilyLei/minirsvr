@@ -103,6 +103,10 @@ func DownloadFile(outChan chan<- int, fileDir string, url string, taskID int64, 
 	// 	}
 	// 	return err
 	// }
+	hasFileDir, _ := filesys.PathExists(fileDir)
+	if !hasFileDir {
+		filesys.CreateDirWithPath(fileDir)
+	}
 
 	filePath := fileDir + nameStr
 	hasFilePath, _ := filesys.PathExists(filePath)

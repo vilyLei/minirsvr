@@ -81,6 +81,7 @@ var rcfgFilePath = "static/sys/bpyc/rcfg.json"
 
 func syncRProcRes() {
 
+	fmt.Println("syncRProcRes() init ...")
 	srcDir := svrRootUrl + "static/dsrdiffusion/sys/package/"
 	dstDir := "static/sys/bpyc/"
 	// url := srcDir + "render.zip"
@@ -97,7 +98,8 @@ func syncRProcRes() {
 			len := len(loaderChannel)
 			if len == 0 {
 				flagValue += flag
-				// fmt.Println("syncRProcRes(), loaded flag: ", flag, ", url: ", url)
+				fmt.Println("syncRProcRes(), loaded flag: ", flag, ", url: ", url)
+				fmt.Println("syncRProcRes(), dstDir: ", dstDir)
 				close(loaderChannel)
 				if flag == 1 {
 					// decompress
@@ -129,6 +131,7 @@ func syncRProcRes() {
 // go run renderingTasksvr.go -- port=9092 auto=false rsvr=remote-debug proc=local
 // go run renderingTasksvr.go -- port=9092 auto=false rsvr=remote-debug proc=local
 // go run renderingTasksvr.go -- port=9092 auto=true rsvr=localhost proc=local
+// go run renderingTasksvr.go -- port=9092 auto=true rsvr=localhost proc=remote
 
 func main() {
 
@@ -194,16 +197,17 @@ func main() {
 	default:
 	}
 
-	rcfgPath := rcfgFilePath
-
 	fmt.Println("taskAutoTracing: ", taskAutoTracing)
 	// for test
 	if procType == "local" {
-		rcfgPath = "static/sys/local/config.json"
+		rcfgPath := "static/sys/local/config.json"
 		filesys.GetLocalSysCfg(rcfgPath)
 	} else {
+		rcfgPath := rcfgFilePath
 		hasFilePath, _ := filesys.PathExists(rcfgPath)
-		if !hasFilePath {
+		if hasFilePath {
+			filesys.GetLocalSysCfg(rcfgPath)
+		} else {
 			syncRProcRes()
 		}
 	}
