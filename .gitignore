@@ -21,6 +21,7 @@
 go.work
 src/renderingsvr/static/sceneres/
 src/renderingsvr/static/sys/local/
+src/renderingsvr/static/sys/bpyc/
 dist/
 node_modules/
 *.code-workspace

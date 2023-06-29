@@ -24,8 +24,7 @@ func PathExists(path string) (bool, error) {
 
 var LocalSysCfg LocalSysConfig
 
-func GetLocalSysCfg() {
-	filePath := "static/sys/local/config.json"
+func GetLocalSysCfg(filePath string) {
 	hasFilePath, _ := PathExists(filePath)
 	if hasFilePath {
 		jsonFile, err := os.OpenFile(filePath, os.O_RDONLY, os.ModeDevice)
@@ -180,4 +179,25 @@ func CreateRenderingConfigFileToPath(path string, rendererPath string, param Ren
 
 	writer.Flush()
 	fmt.Println("CreateRenderingConfigFileToPath(), success !!!")
+}
+
+func WriteTxtFileToPath(filePath string, fileContent string) {
+
+	hasResDirPath, _ := PathExists(filePath)
+	if hasResDirPath {
+		os.Remove(filePath)
+	}
+	file, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE, 0666)
+	if err != nil {
+		fmt.Printf("WriteTxtFileToPath(), err: %v\n", err)
+		return
+	}
+	defer file.Close()
+
+	writer := bufio.NewWriter(file)
+
+	writer.WriteString(fileContent)
+
+	writer.Flush()
+	fmt.Println("WriteTxtFileToPath(), success !!!")
 }
