@@ -24,7 +24,8 @@ import (
 // go build -o ./ renderingTasksvr.go
 // go run renderingTasksvr.go
 // go run renderingTasksvr.go 9092 auto
-// go run renderingTasksvr.go 9092 false
+// go run renderingTasksvr.go 9092 false remote-debug localProc
+// go run renderingTasksvr.go -port=9092 -auto=false -rsvr=remote-debug -proc=local
 
 // 调用 http://localhost:9092/rendering 这个请求就可以本地测试渲染任务调度
 
@@ -124,6 +125,8 @@ func syncRProcRes() {
 	fmt.Println("syncRProcRes() end ...")
 }
 
+// go run renderingTasksvr.go -- port=9092 auto=false rsvr=remote-debug proc=local
+
 func main() {
 
 	svrRootUrl = "http://localhost:9090/"
@@ -131,13 +134,6 @@ func main() {
 	// svrRootUrl = "http://www.artvily.com:9093/"
 
 	fmt.Println("renderingTaskSvr init ...")
-	rcfgPath := rcfgFilePath
-	hasFilePath, _ := filesys.PathExists(rcfgPath)
-	if hasFilePath {
-		// rcfgPath = "-"
-	} else {
-		syncRProcRes()
-	}
 
 	rootDir, errOGT := os.Getwd()
 	if errOGT != nil {
@@ -158,11 +154,31 @@ func main() {
 	if argsLen > 2 {
 		taskAutoTracing = "" + os.Args[2]
 	}
+	debugFlag := true
+	if argsLen > 3 {
+		// taskAutoTracing = "" + os.Args[2]
+		switch os.Args[2] {
+		case "remote-debug":
+			svrRootUrl = "http://www.artvily.com:9093/"
+		case "remote-release":
+			svrRootUrl = "http://www.artvily.com/"
+		default:
+		}
+	}
+	rcfgPath := rcfgFilePath
+	hasFilePath, _ := filesys.PathExists(rcfgPath)
+	if hasFilePath {
+		// rcfgPath = "-"
+	} else {
+		syncRProcRes()
+	}
+
 	fmt.Println("taskAutoTracing: ", taskAutoTracing)
 	// for test
-	// if rcfgPath == "" {
-	// 	rcfgPath = "static/sys/local/config.json"
-	// }
+	if debugFlag {
+		rcfgPath = "static/sys/local/config.json"
+	}
+
 	filesys.GetLocalSysCfg(rcfgPath)
 
 	message.Init()

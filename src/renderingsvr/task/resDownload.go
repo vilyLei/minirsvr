@@ -64,7 +64,7 @@ func (self *WriteCounter) PrintProgress() {
 	if self.TaskID > 0 {
 		if self.Progress != pro {
 			self.Progress = pro
-			fmt.Println("Send >>> Downloading: ", self.Total, "self.Progress: ", strconv.Itoa(self.Progress)+"%")
+			// fmt.Println("Send >>> Downloading: ", self.Total, "self.Progress: ", strconv.Itoa(self.Progress)+"%")
 			NotifyTaskInfoToSvr("task_rendering_load_res", pro, self.TaskID, self.TaskName)
 		}
 	}

@@ -169,13 +169,13 @@ func StartupTaskCheckingTicker(in <-chan message.RenderingSTChannelData) {
 					fmt.Println("	$$$->>> execNode.ResUrl: ", execNode.ResUrl)
 				}
 			case 2:
-				fmt.Println("StartupTaskCheckingTicker() >>> ready add a new task, execNode.IsFree(): ", execNode.IsFree(), st.TaskName, execNode.RunningStatus)
+				// fmt.Println("StartupTaskCheckingTicker() >>> ready add a new task, execNode.IsFree(): ", execNode.IsFree(), st.TaskName, execNode.RunningStatus)
 				if execNode.IsFree() {
 					execNode.RunningStatus = 5
 					go StartupATaskReq()
 				}
 			case 11:
-				fmt.Println("StartupTaskCheckingTicker() >>> nothing a new task.")
+				// fmt.Println("StartupTaskCheckingTicker() >>> nothing a new task.")
 				if execNode.RunningStatus == 5 {
 					execNode.RunningStatus = 0
 				}
@@ -238,7 +238,7 @@ func AddANewTaskFromTaskInfo(tasks []RTaskJsonNode) {
 		}
 	}
 	if nothingFlag {
-		fmt.Println("AddANewTaskFromTaskInfo() >>> nothing new test rendering task !!!!!!!")
+		// fmt.Println("AddANewTaskFromTaskInfo() >>> nothing new test rendering task !!!!!!!")
 		var st message.RenderingSTChannelData
 		st.Reset()
 		st.Flag = 11
@@ -291,7 +291,7 @@ func receiveTasksReq(data []byte) {
 
 func receiveATaskReq(data []byte) {
 
-	fmt.Println("receiveATaskReq(), string(data): ", string(data))
+	// fmt.Println("receiveATaskReq(), string(data): ", string(data))
 	var taskInfo RTaskJson
 	err := json.Unmarshal(data, &taskInfo)
 	if err != nil {
@@ -312,7 +312,7 @@ func receiveATaskReq(data []byte) {
 			// ReadyAddANewTask("anewtask")
 			AddANewTaskFromTaskInfo([]RTaskJsonNode{task})
 		} else {
-			fmt.Println("receiveATaskReq(), has not a new task.")
+			// fmt.Println("receiveATaskReq(), has not a new task.")
 			AddANewTaskFromTaskInfo([]RTaskJsonNode{})
 		}
 	}
