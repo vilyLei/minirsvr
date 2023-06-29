@@ -126,12 +126,12 @@ func syncRProcRes() {
 }
 
 // go run renderingTasksvr.go -- port=9092 auto=false rsvr=remote-debug proc=local
+// go run renderingTasksvr.go -- port=9092 auto=false rsvr=remote-debug proc=local
+// go run renderingTasksvr.go -- port=9092 auto=true rsvr=localhost proc=local
 
 func main() {
 
-	svrRootUrl = "http://localhost:9090/"
 	svrRootUrl = "http://localhost:9091/"
-	// svrRootUrl = "http://www.artvily.com:9093/"
 
 	fmt.Println("renderingTaskSvr init ...")
 
@@ -144,60 +144,77 @@ func main() {
 	fmt.Println("rootDir: ", rootDir)
 
 	argsLen := len(os.Args)
+
+	var cmdMap = make(map[string]string)
+	if argsLen > 3 {
+		for i := 2; i < argsLen; i++ {
+			parts := strings.Split(os.Args[i], "=")
+			if len(parts) > 1 {
+				cmdMap[parts[0]] = parts[1]
+			}
+			// fmt.Println("os.Args[", i, "]: ", os.Args[i])
+		}
+		for k, v := range cmdMap {
+			fmt.Println("key: ", k, ", value: ", v)
+		}
+		fmt.Println("renderingTaskSvr cmds parsing end ...")
+		// return
+	} else {
+		fmt.Println("Error cmd params !!!")
+		fmt.Println("example: svr.exe -- port=9092 auto=true rsvr=remote-release proc=local")
+	}
 	// fmt.Println("argsLen: ", argsLen)
 	var portStr = "9092"
-	var taskAutoTracing = "auto"
-	if argsLen > 1 {
-		portStr = "" + os.Args[1]
-		fmt.Println("portStr: ", portStr)
+	cmdValue, hasKey := cmdMap["port"]
+	if hasKey {
+		portStr = cmdValue
 	}
-	if argsLen > 2 {
-		taskAutoTracing = "" + os.Args[2]
+	var taskAutoTracing = true
+	cmdValue, hasKey = cmdMap["auto"]
+	if hasKey {
+		taskAutoTracing = cmdValue == "true"
 	}
-	debugFlag := true
-	if argsLen > 3 {
-		// taskAutoTracing = "" + os.Args[2]
-		switch os.Args[2] {
-		case "remote-debug":
-			svrRootUrl = "http://www.artvily.com:9093/"
-		case "remote-release":
-			svrRootUrl = "http://www.artvily.com/"
-		default:
-		}
+	var procType = "local"
+	cmdValue, hasKey = cmdMap["proc"]
+	if hasKey {
+		procType = cmdValue
 	}
+
+	var rsvrType = "local"
+	cmdValue, hasKey = cmdMap["rsvr"]
+	if hasKey {
+		rsvrType = cmdValue
+	}
+	switch rsvrType {
+	case "remote-debug":
+		svrRootUrl = "http://www.artvily.com:9093/"
+	case "remote-release":
+		svrRootUrl = "http://www.artvily.com/"
+	default:
+	}
+
 	rcfgPath := rcfgFilePath
-	hasFilePath, _ := filesys.PathExists(rcfgPath)
-	if hasFilePath {
-		// rcfgPath = "-"
-	} else {
-		syncRProcRes()
-	}
 
 	fmt.Println("taskAutoTracing: ", taskAutoTracing)
 	// for test
-	if debugFlag {
+	if procType == "local" {
 		rcfgPath = "static/sys/local/config.json"
+		filesys.GetLocalSysCfg(rcfgPath)
+	} else {
+		hasFilePath, _ := filesys.PathExists(rcfgPath)
+		if !hasFilePath {
+			syncRProcRes()
+		}
 	}
-
-	filesys.GetLocalSysCfg(rcfgPath)
 
 	message.Init()
-	resDirPath := ".\\static\\sceneres\\scene01\\"
-	flagBool, _ := filesys.PathExists(resDirPath)
 
-	fmt.Println("renderingTaskSvr flagBool: ", flagBool)
-	if flagBool {
-		fmt.Println("renderingTaskSvr path exist ok ...")
-	}
 	var taskNode task.TaskExecNode
 	taskNode.Uid = 101
 	fmt.Println("renderingTaskSvr taskNode: ", taskNode)
 	svr.RootDir = rootDir
-	svr.AutoCheckRTask = false
-	if taskAutoTracing == "auto" {
-		fmt.Println("auto checking rendering task")
-		svr.AutoCheckRTask = true
-	}
+	svr.AutoCheckRTask = taskAutoTracing
+
 	svr.Init(portStr, svrRootUrl)
 	fmt.Println("renderingTaskSvr end ...")
 }
