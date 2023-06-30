@@ -91,7 +91,7 @@ func StartupATask(rootDir string, resDirPath string, rendererPath string, rtNode
 
 	if rtNode.CheckModelDrcStatus() == 0 {
 		fmt.Println("#### ### need exec export model to drc.")
-		execModelExport(GetModelFilePath(resDirPath, resUrl))
+		execModelExport(filesys.GetModelFilePath(resDirPath, resUrl))
 	}
 
 	// hasStatusFile := filesys.HasSceneResStatusJson(resDirPath)
@@ -107,10 +107,10 @@ func StartupATask(rootDir string, resDirPath string, rendererPath string, rtNode
 	resParam.PathDir = resDirPath
 	// check the file exists
 	// go loadRenderingRes(loaderChannel, resParam)
-	if !CheckModelFileExists(resDirPath, resUrl) {
+	if !filesys.CheckModelFileExists(resDirPath, resUrl) {
 
 		loaderChannel := make(chan int, 1)
-		go DownloadFile(loaderChannel, resDirPath, resUrl, taskID, taskName)
+		go filesys.DownloadFile(loaderChannel, resDirPath, resUrl, taskID, taskName)
 
 		for flag := range loaderChannel {
 			len := len(loaderChannel)

@@ -222,7 +222,7 @@ func (self *TaskExecNode) Exec() *TaskExecNode {
 					flag := filesys.RemoveFileWithPath(filePath)
 					fmt.Println("Exec(), clear the rtask status info file, flag: ", flag, filePath)
 				}
-				self.ResFilePath = GetModelFilePath(resDirPath, self.ResUrl)
+				self.ResFilePath = filesys.GetModelFilePath(resDirPath, self.ResUrl)
 
 				if self.CheckModelDrcStatus() == 0 {
 					self.ModelExportDrcST = 0

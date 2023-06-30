@@ -78,50 +78,56 @@ func decompressFile(compressFilePath string, dstDir string) {
 }
 
 var rcfgFilePath = "static/sys/bpyc/rcfg.json"
+var rendererCmdParam = "renderer=D:/programs/blender/blender.exe"
 
 func syncRProcRes() {
 
 	fmt.Println("syncRProcRes() init ...")
 	srcDir := svrRootUrl + "static/dsrdiffusion/sys/package/"
 	dstDir := "static/sys/bpyc/"
-	// url := srcDir + "render.zip"
+	envSrcDir := svrRootUrl + "static/dsrdiffusion/common/env/"
+	envDstDir := "static/common/env/"
 
-	var files = [2]string{"render.zip", "model.zip"}
+	var srcDirs = [3]string{srcDir, srcDir, envSrcDir}
+	var dstDirs = [3]string{dstDir, dstDir, envDstDir}
+	var files = [3]string{"render.zip", "model.zip", "default.hdr"}
+	var flags = [3]bool{true, true, false}
+
 	flagValue := 0
-	for i := 0; i < len(files); i++ {
-		url := srcDir + files[i]
+	filesTotal := len(files)
+	for i := 0; i < filesTotal; i++ {
+		url := srcDirs[i] + files[i]
 		// fmt.Println("syncRProcRes() init url: ", url)
 		loaderChannel := make(chan int, 1)
-		go task.DownloadFile(loaderChannel, dstDir, url, 0, "")
+		go task.DownloadFile(loaderChannel, dstDirs[i], url, 0, "")
 
 		for flag := range loaderChannel {
 			len := len(loaderChannel)
 			if len == 0 {
 				flagValue += flag
 				fmt.Println("syncRProcRes(), loaded flag: ", flag, ", url: ", url)
-				fmt.Println("syncRProcRes(), dstDir: ", dstDir)
+				fmt.Println("syncRProcRes(), dstDir: ", dstDirs[i])
 				close(loaderChannel)
-				if flag == 1 {
+				if flag == 1 && flags[i] {
 					// decompress
-					filePath := dstDir + files[i]
+					filePath := dstDirs[i] + files[i]
 					// fmt.Println("ready compress filePath: ", filePath)
-					decompressFile(filePath, dstDir)
+					decompressFile(filePath, dstDirs[i])
 				}
 			}
 		}
 	}
-	if flagValue == 2 {
+	if flagValue == filesTotal {
 		fmt.Println("syncRProcRes() success ...")
-		renderPath := "renderer=D:/programs/blender/blender.exe"
 		// write rcfg.json file
 		rcfg := &filesys.LocalSysCfg
 		render := &rcfg.Renderer
 		render.MainProc = "python " + dstDir + "render/renderShell.py"
-		render.RenerderProc = renderPath + " rmodule=" + dstDir + "render/modelRendering.py"
+		render.RenerderProc = rendererCmdParam + " rmodule=" + dstDir + "render/modelRendering.py"
 
 		mtd := &rcfg.ModelToDrc
 		mtd.MainProc = "python " + dstDir + "model/encodeAModelToDrcs.py -- encoder=" + dstDir + "model/draco_encoder.exe"
-		mtd.ExportProc = renderPath + " exportPy=" + dstDir + "model/exportMeshesToDrcObjs.py"
+		mtd.ExportProc = rendererCmdParam + " exportPy=" + dstDir + "model/exportMeshesToDrcObjs.py"
 
 		filesys.WriteTxtFileToPath(rcfgFilePath, rcfg.GetJsonString())
 	}
@@ -148,6 +154,22 @@ func main() {
 	fmt.Println("rootDir: ", rootDir)
 
 	argsLen := len(os.Args)
+	filesys.ReadSysConfFile()
+	rendererPath := filesys.GetSysConfValueWithName("renderer")
+	if rendererPath != "" {
+		hasFilePath, _ := filesys.PathExists(rendererPath)
+		if hasFilePath {
+			fmt.Println("renderingTaskSvr find the renderer program success !!!")
+		} else {
+			fmt.Println("renderingTaskSvr Error: can't find the renderer program !!!")
+		}
+		rendererCmdParam = "renderer=" + rendererPath
+	}
+	fmt.Println("renderingTaskSvr tese end ...rendererCmdParam: ", rendererCmdParam)
+	if argsLen > 2 {
+		fmt.Println("renderingTaskSvr tese end ...")
+		return
+	}
 
 	var cmdMap = make(map[string]string)
 	if argsLen > 3 {

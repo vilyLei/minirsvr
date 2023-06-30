@@ -388,6 +388,7 @@ func Init(portStr string, psvrRootUrl string) {
 	taskReqSvrUrl = svrRootUrl + "renderingTask"
 
 	task.TaskReqSvrUrl = taskReqSvrUrl
+	filesys.TaskReqSvrUrl = taskReqSvrUrl
 
 	StartTaskMonitor()
 	StartSvr(portStr)

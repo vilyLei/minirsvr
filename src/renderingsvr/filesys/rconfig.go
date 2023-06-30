@@ -5,34 +5,6 @@ import (
 	"fmt"
 )
 
-/*
-sizes := param.Resolution
-	fileContent := `{
-		"renderer-proc":"` + rendererPath + `",
-		"renderer-instance":
-			{
-				"name":"high-image-renderer",
-				"status":"stop"
-			},
-		"sys": {
-			"rootDir":"` + param.RootDir + `"
-		},
-		"resource":
-			{
-				"type": "` + param.ResourceType + `",
-				"models": ` + param.Models + `
-			},
-		"task":
-			{
-				"taskID": ` + strconv.FormatInt(param.TaskID, 10) + `,
-				"times": ` + strconv.FormatInt(param.Times, 10) + `,
-				"outputPath": "` + param.OutputPath + `",
-				"outputResolution": [` + strconv.Itoa(sizes[0]) + `,` + strconv.Itoa(sizes[1]) + `]
-			}
-		}`
-
-*/
-
 type RenderingConfigParam struct {
 	Uuid       string
 	TaskID     int64
@@ -161,4 +133,79 @@ func (self *LocalSysConfig) GetModelExportCMD(modelFilePath string) string {
 	m := &self.ModelToDrc
 	cmd := m.MainProc + " " + m.ExportProc + " modelFilePath=" + modelFilePath
 	return cmd
+}
+
+var rendererCmdParam = "renderer=D:/programs/blender/blender.exe"
+
+type SysStartupParam struct {
+	PortStr        string
+	RsvrType       string
+	SvrRootUrl     string
+	ProcType       string
+	AutoCheckRTask bool
+}
+
+func (self *SysStartupParam) Reset() *SysStartupParam {
+	self.AutoCheckRTask = true
+	self.ProcType = "local"
+	self.RsvrType = "local"
+	self.SvrRootUrl = "http://localhost:9091/"
+	return self
+}
+
+func (self *SysStartupParam) SetParam(dataMap map[string]string) *SysStartupParam {
+
+	self.Reset()
+
+	value, hasKey := dataMap["port"]
+	if hasKey {
+		self.PortStr = value
+	}
+	value, hasKey = dataMap["proc"]
+	if hasKey {
+		self.ProcType = value
+	}
+
+	value, hasKey = dataMap["auto"]
+	if hasKey {
+		self.AutoCheckRTask = value == "true"
+	}
+
+	value, hasKey = dataMap["rsvr"]
+	if hasKey {
+		self.RsvrType = value
+	}
+	switch self.RsvrType {
+	case "remote-debug":
+		self.SvrRootUrl = "http://www.artvily.com:9093/"
+	case "remote-release", "remote":
+		self.SvrRootUrl = "http://www.artvily.com/"
+	default:
+	}
+
+	rendererPath := GetSysConfValueWithName("renderer")
+	if rendererPath != "" {
+		hasFilePath, _ := PathExists(rendererPath)
+		if hasFilePath {
+			fmt.Println("dsrdiffusion find the renderer program success !!!")
+		} else {
+			fmt.Println("dsrdiffusion occurred Error: can't find the renderer program !!!")
+		}
+		rendererCmdParam = "renderer=" + rendererPath
+	}
+	fmt.Println("dsrdiffusion rendererCmdParam: ", rendererCmdParam)
+
+	if self.ProcType == "local" {
+		rcfgPath := "static/sys/local/config.json"
+		GetLocalSysCfg(rcfgPath)
+	} else {
+		rcfgPath := rcfgFilePath
+		hasFilePath, _ := PathExists(rcfgPath)
+		if hasFilePath {
+			GetLocalSysCfg(rcfgPath)
+		} else {
+			syncRProcRes(self)
+		}
+	}
+	return self
 }
