@@ -53,6 +53,7 @@ func execModelExport(modelFilePath string) {
 	cmdParams := filesys.GetModelExportCMD(modelFilePath)
 	fmt.Println("execModelExport(), exe cmdParams: ", cmdParams)
 	cmd := exec.Command("cmd.exe", "/c", "start "+cmdParams)
+	//stdout, err := cmd.StdoutPipe() // 从命令行获取输出内容
 	cmd.Run()
 }
 func StartupATask(rootDir string, resDirPath string, rendererPath string, rtNode TaskExecNode) {

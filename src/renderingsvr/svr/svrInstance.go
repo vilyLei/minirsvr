@@ -266,7 +266,23 @@ func StartSvr(portStr string) {
 		}
 		c.String(http.StatusOK, fmt.Sprintf("This task is currently executing now."))
 	})
-	router.Run(":" + portStr)
+	portValue, err := strconv.Atoi(portStr)
+	if err != nil {
+		portValue = 9092
+	}
+	dp := 1
+	testTimes := 16
+	for i := 0; i < testTimes; i++ {
+		err = router.Run(":" + portStr)
+		if err != nil {
+			fmt.Println("Bad svr port: ", portStr, " !!!")
+			portValue += dp
+			dp += 1
+			portStr = strconv.Itoa(portValue)
+		} else {
+			i = testTimes
+		}
+	}
 }
 
 func receiveTasksReq(data []byte) {

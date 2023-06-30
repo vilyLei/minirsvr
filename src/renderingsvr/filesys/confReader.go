@@ -57,8 +57,6 @@ func decompressFile(compressFilePath string, dstDir string) {
 	}
 }
 
-var rcfgFilePath = "static/sys/bpyc/rcfg.json"
-
 func syncRProcRes(param *SysStartupParam) {
 
 	fmt.Println("syncRProcRes() init ...")
@@ -129,14 +127,12 @@ func ReadSysConfFile() {
 			confValue, err := ioutil.ReadAll(confFile)
 			if err == nil {
 				fileContent := string(confValue)
-				fmt.Println("ReadConfFile(), fileContent: ", fileContent)
+				// fmt.Println("ReadConfFile(), fileContent: ", fileContent)
 				lines := strings.Split(strings.ReplaceAll(fileContent, "\r\n", "\n"), "\n")
 				for _, value := range lines {
 					value = strings.TrimSpace(value)
 					index := strings.Index(value, "#")
 					if index != 0 {
-						// fmt.Println("ReadConfFile(), value: ", value)
-						// parts := strings.Split(value, "=")
 						index = strings.Index(value, "=")
 						if index > 0 && index < (len(value)-1) {
 							key := value[0:index]
@@ -146,8 +142,23 @@ func ReadSysConfFile() {
 								key = strings.TrimSpace(key)
 								value = strings.TrimSpace(value)
 
-								fmt.Println("ReadConfFile(), key, value: ", key+","+value)
+								// fmt.Println("ReadConfFile(), key, value: ", key+","+value)
 								SysConfMap[key] = value
+								switch key {
+								case "cmdparams":
+									args := strings.Split(value, " ")
+									argsLen := len(args)
+									for i := 0; i < argsLen; i++ {
+										if strings.Index(args[i], "=") > 0 {
+											parts := strings.Split(args[i], "=")
+											if len(parts) > 1 {
+												SysConfMap[parts[0]] = parts[1]
+												// fmt.Println("		cmdparams key: ", parts[0], ", value: ", parts[1])
+											}
+										}
+									}
+								default:
+								}
 							}
 						}
 					}

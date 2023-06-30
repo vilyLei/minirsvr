@@ -147,11 +147,14 @@ type SysStartupParam struct {
 
 func (self *SysStartupParam) Reset() *SysStartupParam {
 	self.AutoCheckRTask = true
+	self.PortStr = "9092"
 	self.ProcType = "local"
 	self.RsvrType = "local"
 	self.SvrRootUrl = "http://localhost:9091/"
 	return self
 }
+
+var rcfgFilePath = "static/sys/bpyc/rcfg.json"
 
 func (self *SysStartupParam) SetParam(dataMap map[string]string) *SysStartupParam {
 

@@ -71,6 +71,7 @@ func main() {
 
 	message.Init()
 
+	fmt.Println("dsrdiffusion startupParam.ProcType: ", startupParam.ProcType)
 	fmt.Println("dsrdiffusion startupParam.PortStr: ", startupParam.PortStr)
 	fmt.Println("dsrdiffusion startupParam.SvrRootUrl: ", startupParam.SvrRootUrl)
 	fmt.Println("dsrdiffusion startupParam.AutoCheckRTask: ", startupParam.AutoCheckRTask)
