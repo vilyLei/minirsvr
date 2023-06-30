@@ -35,8 +35,6 @@ var startupParam filesys.SysStartupParam
 
 func main() {
 
-	// svrRootUrl = "http://localhost:9091/"
-
 	fmt.Println("dsrdiffusion init ...")
 
 	rootDir, errOGT := os.Getwd()
@@ -49,21 +47,6 @@ func main() {
 
 	argsLen := len(os.Args)
 	filesys.ReadSysConfFile()
-	// rendererPath := filesys.GetSysConfValueWithName("renderer")
-	// if rendererPath != "" {
-	// 	hasFilePath, _ := filesys.PathExists(rendererPath)
-	// 	if hasFilePath {
-	// 		fmt.Println("dsrdiffusion find the renderer program success !!!")
-	// 	} else {
-	// 		fmt.Println("dsrdiffusion occurred Error: can't find the renderer program !!!")
-	// 	}
-	// 	rendererCmdParam = "renderer=" + rendererPath
-	// }
-	// fmt.Println("dsrdiffusion rendererCmdParam: ", rendererCmdParam)
-	// if argsLen > 2 {
-	// 	fmt.Println("dsrdiffusion tese end ...")
-	// 	return
-	// }
 
 	if argsLen > 3 {
 		var cmdMap = make(map[string]string)
@@ -85,60 +68,13 @@ func main() {
 		// fmt.Println("Error cmd params !!!")
 		// fmt.Println("example: svr.exe -- port=9092 auto=true rsvr=remote-release proc=local")
 	}
-	// svrRootUrl = startupParam.SvrRootUrl
-	// fmt.Println("argsLen: ", argsLen)
-	// var portStr = "9092"
-	// cmdValue, hasKey := cmdMap["port"]
-	// if hasKey {
-	// 	portStr = cmdValue
-	// }
-	// var taskAutoTracing = true
-	// cmdValue, hasKey = cmdMap["auto"]
-	// if hasKey {
-	// 	taskAutoTracing = cmdValue == "true"
-	// }
-	// var procType = "local"
-	// cmdValue, hasKey = cmdMap["proc"]
-	// if hasKey {
-	// 	procType = cmdValue
-	// }
-
-	// var rsvrType = "local"
-	// cmdValue, hasKey = cmdMap["rsvr"]
-	// if hasKey {
-	// 	rsvrType = cmdValue
-	// }
-	// switch rsvrType {
-	// case "remote-debug":
-	// 	svrRootUrl = "http://www.artvily.com:9093/"
-	// case "remote-release":
-	// 	svrRootUrl = "http://www.artvily.com/"
-	// default:
-	// }
-
-	// fmt.Println("taskAutoTracing: ", taskAutoTracing)
-
-	// if startupParam.ProcType == "local" {
-	// 	rcfgPath := "static/sys/local/config.json"
-	// 	filesys.GetLocalSysCfg(rcfgPath)
-	// } else {
-	// 	rcfgPath := rcfgFilePath
-	// 	hasFilePath, _ := filesys.PathExists(rcfgPath)
-	// 	if hasFilePath {
-	// 		filesys.GetLocalSysCfg(rcfgPath)
-	// 	} else {
-	// 		syncRProcRes()
-	// 	}
-	// }
 
 	message.Init()
 
 	fmt.Println("dsrdiffusion startupParam.PortStr: ", startupParam.PortStr)
 	fmt.Println("dsrdiffusion startupParam.SvrRootUrl: ", startupParam.SvrRootUrl)
 	fmt.Println("dsrdiffusion startupParam.AutoCheckRTask: ", startupParam.AutoCheckRTask)
-	// var taskNode task.TaskExecNode
-	// taskNode.Uid = 101
-	// fmt.Println("dsrdiffusion taskNode: ", taskNode)
+
 	svr.RootDir = rootDir
 	svr.AutoCheckRTask = startupParam.AutoCheckRTask
 
