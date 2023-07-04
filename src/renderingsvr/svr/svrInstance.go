@@ -53,9 +53,15 @@ func uploadDrcsToSvr(execNode *task.TaskExecNode) {
 		var fnames []string = filesys.GetAllFilesNamesInCurrDir(drcDir)
 		total := len(fnames)
 		var paths []string
+		// for i := 0; i < total; i++ {
+		// 	fmt.Println("fnames[", i, "]: ", fnames[i])
+		// 	if strings.Contains(fnames[i], ".drc") {
+		// 		paths = append(paths, drcDir+fnames[i])
+		// 	}
+		// }
 		for i := 0; i < total; i++ {
 			fmt.Println("fnames[", i, "]: ", fnames[i])
-			if strings.Contains(fnames[i], ".drc") {
+			if strings.Contains(fnames[i], ".drc") || strings.Contains(fnames[i], ".json") {
 				paths = append(paths, drcDir+fnames[i])
 			}
 		}
