@@ -48,6 +48,9 @@ type RTC_Resource struct {
 	Type   string   `json:"type"`
 	Models []string `json:"models"`
 }
+type RTC_ActiveMesh struct {
+	Name string `json:"name"`
+}
 type RTC_Task struct {
 	TaskID           int64       `json:"taskID"`
 	Times            int64       `json:"times"`
