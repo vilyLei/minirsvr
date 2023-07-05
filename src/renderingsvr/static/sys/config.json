@@ -1,21 +1,63 @@
 {
-	"renderer-proc": "./renderer.exe",
-	"renderer-instance": {
-		"name": "high-image-renderer",
-		"status": "stop"
-	},
-	"sys": {
-		"rootDir": "D:/dev/webdev/minirsvr/src/renderingsvr/"
-	},
-	"resource": {
-		"type": "glb",
-		"models": [
-			"boomBox.glb"
-		]
-	},
-	"task": {
-		"taskID": 2003,
-		"times": 4,
-		"outputPath": ""
-	}
+    "renderer-proc": "./renderer.exe",
+    "renderer-instance": {
+        "name": "high-image-renderer",
+        "status": "stop"
+    },
+    "sys": {
+        "rootDir": "./renderingsvr/"
+    },
+    "resource": {
+        "type": "glb",
+        "models": [
+            "apple02.glb"
+        ]
+    },
+    "task": {
+		"unit":"mm",
+        "taskID": 2001,
+        "times": 2,
+		"routput": {
+			"path":"",
+			"resolution":[512,512],
+			"bgTransparent":0,
+			"outputType":"an_image",
+			"bgColor":889977
+		},
+		"renv": {
+			"type":"",
+			"path":"",
+			"rotation": 60
+		},
+		"rcamera": {
+			"viewAngle":50.0,
+			"near": 10,
+			"far":2000,
+			"matrixData":[
+				0.7071067690849304,
+				-0.40824827551841736,
+				0.5773502588272095,
+				2.390000104904175,
+				0.7071067690849304,
+				0.40824827551841736,
+				-0.5773502588272095,
+				-2.390000104904175,
+				0,
+				0.8164965510368347,
+				0.5773502588272095,
+				2.390000104904175,
+				0,
+				0,
+				0,
+				1
+			]
+		},
+		"rmaterial": {
+			"color":889977,
+			"specular":0.5,
+			"metallic": 0.5,
+			"roughness": 0.5,
+			"normalStrength": 1.0
+		}
+    }
 }
