@@ -14,50 +14,55 @@
         ]
     },
     "task": {
-		"unit":"mm",
         "taskID": 2001,
         "times": 2,
-		"routput": {
-			"path":"",
-			"resolution":[512,512],
-			"bgTransparent":0,
-			"outputType":"an_image",
-			"bgColor":889977
-		},
-		"renv": {
-			"type":"",
-			"path":"",
-			"rotation": 60
-		},
-		"rcamera": {
-			"viewAngle":50.0,
-			"near": 10,
-			"far":2000,
-			"matrixData":[
-				0.7071067690849304,
-				-0.40824827551841736,
-				0.5773502588272095,
-				2.390000104904175,
-				0.7071067690849304,
-				0.40824827551841736,
-				-0.5773502588272095,
-				-2.390000104904175,
-				0,
-				0.8164965510368347,
-				0.5773502588272095,
-				2.390000104904175,
-				0,
-				0,
-				0,
-				1
-			]
-		},
-		"rmaterial": {
-			"color":889977,
-			"specular":0.5,
-			"metallic": 0.5,
-			"roughness": 0.5,
-			"normalStrength": 1.0
+		"rendering": {
+			"unit":"m",
+			"output": {
+				"path":"",
+				"resolution":[512,512],
+				"bgTransparent":0,
+				"outputType":"single_image",
+				"bgColor":889977
+			},
+			"env": {
+				"type":"",
+				"path":"",
+				"rotation": 60
+			},
+			"camera": {
+				"viewAngle": 50.0,
+				"near": 0.1,
+				"far": 20,
+				"matrix": [
+					0.7071067690849304,
+					-0.40824827551841736,
+					0.5773502588272095,
+					2.390000104904175,
+					0.7071067690849304,
+					0.40824827551841736,
+					-0.5773502588272095,
+					-2.390000104904175,
+					0,
+					0.8164965510368347,
+					0.5773502588272095,
+					2.390000104904175,
+					0,
+					0,
+					0,
+					1
+				]
+			},
+			"rmaterials": [{
+				"modelName":"apple_body_model",
+				"color":889977,
+				"specular":0.5,
+				"metallic": 0.5,
+				"roughness": 0.5,
+				"normalStrength": 1.0,
+				"usScaleX": 1.0,
+				"usScaleY": 1.0
+			}]
 		}
     }
 }
