@@ -7,6 +7,7 @@ import (
 
 	"renderingsvr.com/filesys"
 	"renderingsvr.com/message"
+	"renderingsvr.com/rdata"
 )
 
 // go mod init renderingsvr.com/task
@@ -39,6 +40,8 @@ type TaskExecNode struct {
 	BGTransparent    int
 	ModelExportDrcST int
 	ResFilePath      string
+
+	RNode rdata.RTRenderingNode `json:"rnode"`
 }
 
 func (self *TaskExecNode) Init() *TaskExecNode {
@@ -143,7 +146,10 @@ func (self *TaskExecNode) toTaskFinish() *TaskExecNode {
 
 	fmt.Println("toTaskFinish(), >>> pathDif: ", self.PathDir)
 	pic_type := ""
-	if self.BGTransparent == 1 {
+	rnode := self.RNode
+	output := rnode.Output
+	// if self.BGTransparent == 1 {
+	if output.BGTransparent == 1 {
 		pic_type = "png"
 	}
 	picFlag, picNames := filesys.CheckPicFileInCurrDir(self.PathDir, pic_type)

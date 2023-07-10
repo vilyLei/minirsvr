@@ -2,6 +2,8 @@ package message
 
 import (
 	"fmt"
+
+	"renderingsvr.com/rdata"
 )
 
 // go mod init renderingsvr.com/message
@@ -18,6 +20,8 @@ type RenderingSTChannelData struct {
 	Resolution    [2]int
 	Camdvs        [16]float64
 	BGTransparent int
+
+	RNode rdata.RTRenderingNode `json:"rnode"`
 }
 
 func (self *RenderingSTChannelData) Reset() {

@@ -11,9 +11,9 @@ replace renderingsvr.com/message => ./message
 replace renderingsvr.com/task => ./task
 
 require (
-	github.com/gin-gonic/gin v1.9.0
 	renderingsvr.com/filesys v0.0.0-00010101000000-000000000000
 	renderingsvr.com/message v0.0.0-00010101000000-000000000000
+	renderingsvr.com/rdata v0.0.0-00010101000000-000000000000
 	renderingsvr.com/svr v0.0.0-00010101000000-000000000000
 	renderingsvr.com/task v0.0.0-00010101000000-000000000000
 )
@@ -22,6 +22,7 @@ require (
 	github.com/bytedance/sonic v1.8.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
+	github.com/gin-gonic/gin v1.9.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.11.2 // indirect
@@ -43,3 +44,5 @@ require (
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace renderingsvr.com/rdata => ./rdata

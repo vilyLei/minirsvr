@@ -3,6 +3,8 @@ package filesys
 import (
 	"encoding/json"
 	"fmt"
+
+	"renderingsvr.com/rdata"
 )
 
 type RenderingConfigParam struct {
@@ -22,6 +24,8 @@ type RenderingConfigParam struct {
 
 	ResourceType string
 	Models       []string `json:"models"`
+
+	RNode rdata.RTRenderingNode `json:"rnode"`
 }
 type RenderingTask struct {
 	Uuid     string `json:"uuid"`
@@ -58,7 +62,18 @@ type RTC_Task struct {
 	OutputResolution [2]int      `json:"outputResolution"`
 	Camdvs           [16]float64 `json:"camdvs"`
 	BGTransparent    int         `json:"bgTransparent"`
+
+	RNode rdata.RTRenderingNode `json:"rnode"`
 }
+
+// func (self *RTC_Task) setRNodeFromJson(rnodeJsonStr string) {
+// 	err := json.Unmarshal([]byte(rnodeJsonStr), self)
+// 	if err != nil {
+// 		fmt.Printf("RTC_Task::setRNodeFromJson() Unmarshal failed, err: %v\n", err)
+// 	}
+// 	fmt.Println("RTC_Task::setRNodeFromJson(), self: ", self)
+// }
+
 type RenderTaskConfig struct {
 	RendererProc     string       `json:"renderer-proc"`
 	RendererInstance RTC_Instance `json:"renderer-instance"`
@@ -86,6 +101,7 @@ func (self *RenderTaskConfig) SetValueFromParam(param *RenderingConfigParam) {
 	res := &self.Resource
 	res.Type = param.ResourceType
 	res.Models = param.Models
+
 	task := &self.Task
 	task.TaskID = param.TaskID
 	task.Times = param.Times
@@ -93,6 +109,7 @@ func (self *RenderTaskConfig) SetValueFromParam(param *RenderingConfigParam) {
 	task.OutputResolution = param.Resolution
 	task.Camdvs = param.Camdvs
 	task.BGTransparent = param.BGTransparent
+	task.RNode = param.RNode
 
 }
 func (self *RenderTaskConfig) GetJsonString() string {

@@ -167,6 +167,7 @@ func StartupTaskCheckingTicker(in <-chan message.RenderingSTChannelData) {
 					execNode.Resolution = st.Resolution
 					execNode.Camdvs = st.Camdvs
 					execNode.BGTransparent = st.BGTransparent
+					execNode.RNode = st.RNode
 
 					fmt.Println("	$$$->>> execNode.TaskID: ", execNode.TaskID)
 					fmt.Println("	$$$->>> execNode.Resolution: ", execNode.Resolution)
@@ -233,6 +234,7 @@ func AddANewTaskFromTaskInfo(tasks []RTaskJsonNode) {
 				st.Resolution = tk.Resolution
 				st.Camdvs = tk.Camdvs
 				st.BGTransparent = tk.BGTransparent
+				st.RNode = tk.RNode
 				st.RootDir = RootDir
 				st.StType = 1
 				st.Flag = 1
@@ -294,6 +296,7 @@ func StartSvr(portStr string) {
 func receiveTasksReq(data []byte) {
 
 	var taskInfo RTasksJson
+	taskInfo.Reset()
 	err := json.Unmarshal(data, &taskInfo)
 	if err != nil {
 		fmt.Printf("receiveTaskReq() Unmarshal failed, err: %v\n", err)
@@ -321,6 +324,7 @@ func receiveATaskReq(data []byte) {
 	} else {
 		task := taskInfo.Task
 		if task.Id > 0 {
+			fmt.Println("receiveATaskReq(), string(data): ", string(data))
 			fmt.Println("receiveATaskReq(), task: ", task)
 			if !(strings.Contains(task.ResUrl, "https://") || strings.Contains(task.ResUrl, "http://")) {
 				// if strings.Contains(task.ResUrl, "./") {

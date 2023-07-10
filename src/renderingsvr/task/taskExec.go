@@ -75,6 +75,7 @@ func StartupATask(rootDir string, resDirPath string, rendererPath string, rtNode
 	configParam.Resolution = rtNode.Resolution
 	configParam.Camdvs = rtNode.Camdvs
 	configParam.BGTransparent = rtNode.BGTransparent
+	configParam.RNode = rtNode.RNode
 	configParam.ResourceType = "none"
 	configParam.Models = []string{""}
 	configParam.TaskID = taskID

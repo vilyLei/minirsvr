@@ -7,6 +7,7 @@ import (
 
 	"renderingsvr.com/filesys"
 	"renderingsvr.com/message"
+	"renderingsvr.com/rdata"
 	"renderingsvr.com/svr"
 )
 
@@ -15,6 +16,7 @@ import (
 // go mod edit -replace renderingsvr.com/filesys=./filesys
 // go mod edit -replace renderingsvr.com/task=./task
 // go mod edit -replace renderingsvr.com/svr=./svr
+// go mod edit -replace renderingsvr.com/rdata=./rdata
 
 // go build dsrdiffusion.go
 // go build -o ./ dsrdiffusion.go
@@ -33,6 +35,10 @@ import (
 
 var startupParam filesys.SysStartupParam
 
+func register() {
+	rnode := &rdata.RTRenderingNode{}
+	fmt.Println("rnode: ", rnode)
+}
 func main() {
 
 	fmt.Println("dsrdiffusion init ...")
