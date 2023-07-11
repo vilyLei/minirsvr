@@ -31,6 +31,7 @@ import (
 // go run dsrdiffusion.go -- port=9092 auto=false rsvr=remote-debug proc=local
 // go run dsrdiffusion.go -- port=9092 auto=false rsvr=remote-debug proc=local
 // go run dsrdiffusion.go -- port=9092 auto=true rsvr=localhost proc=local
+// dsrdiffusion.exe -- port=9092 auto=true rsvr=localhost proc=local
 // go run dsrdiffusion.go -- port=9092 auto=true rsvr=localhost proc=remote
 
 var startupParam filesys.SysStartupParam
