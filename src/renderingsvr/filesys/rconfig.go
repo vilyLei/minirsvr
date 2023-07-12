@@ -16,10 +16,6 @@ type RenderingConfigParam struct {
 	Progress   int
 	Phase      string
 
-	Resolution    [2]int
-	Camdvs        [16]float64
-	BGTransparent int
-
 	RootDir string
 
 	ResourceType string
@@ -56,12 +52,9 @@ type RTC_ActiveMesh struct {
 	Name string `json:"name"`
 }
 type RTC_Task struct {
-	TaskID           int64       `json:"taskID"`
-	Times            int64       `json:"times"`
-	OutputPath       string      `json:"outputPath"`
-	OutputResolution [2]int      `json:"outputResolution"`
-	Camdvs           [16]float64 `json:"camdvs"`
-	BGTransparent    int         `json:"bgTransparent"`
+	TaskID     int64  `json:"taskID"`
+	Times      int64  `json:"times"`
+	OutputPath string `json:"outputPath"`
 
 	RNode rdata.RTRenderingNode `json:"rnode"`
 }
@@ -106,9 +99,6 @@ func (self *RenderTaskConfig) SetValueFromParam(param *RenderingConfigParam) {
 	task.TaskID = param.TaskID
 	task.Times = param.Times
 	task.OutputPath = param.OutputPath
-	task.OutputResolution = param.Resolution
-	task.Camdvs = param.Camdvs
-	task.BGTransparent = param.BGTransparent
 	task.RNode = param.RNode
 
 }

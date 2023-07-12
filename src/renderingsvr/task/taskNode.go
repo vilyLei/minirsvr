@@ -35,9 +35,6 @@ type TaskExecNode struct {
 	Progress         int
 	TaskOutput       TaskOutputParam
 	RootDir          string
-	Resolution       [2]int
-	Camdvs           [16]float64
-	BGTransparent    int
 	ModelExportDrcST int
 	ResFilePath      string
 
@@ -62,7 +59,6 @@ func (self *TaskExecNode) Init() *TaskExecNode {
 	self.Progress = 0
 	self.TaskOutput.PicPath = ""
 	self.TaskOutput.Error = false
-	self.BGTransparent = 0
 	self.ModelExportDrcST = -1
 	self.ResFilePath = ""
 	return self
@@ -107,7 +103,7 @@ func (self *TaskExecNode) CheckTaskStatus() (bool, int) {
 						} else {
 							// check output pic file
 							pic_type := ""
-							if self.BGTransparent == 1 {
+							if self.IsBGTransparentOutput() {
 								pic_type = "png"
 							}
 							taskFlag, _ = filesys.CheckPicFileInCurrDir(self.PathDir, pic_type)
@@ -142,14 +138,15 @@ func (self *TaskExecNode) CheckModelDrcStatus() int {
 	fmt.Println("CheckModelDrcStatus(), >>> drcDir: ", drcDir)
 	return 0
 }
+func (self *TaskExecNode) IsBGTransparentOutput() bool {
+	output := self.RNode.Output
+	return output.BGTransparent == 1
+}
 func (self *TaskExecNode) toTaskFinish() *TaskExecNode {
 
 	fmt.Println("toTaskFinish(), >>> pathDif: ", self.PathDir)
 	pic_type := ""
-	rnode := self.RNode
-	output := rnode.Output
-	// if self.BGTransparent == 1 {
-	if output.BGTransparent == 1 {
+	if self.IsBGTransparentOutput() {
 		pic_type = "png"
 	}
 	picFlag, picNames := filesys.CheckPicFileInCurrDir(self.PathDir, pic_type)
@@ -219,6 +216,10 @@ func (self *TaskExecNode) Exec() *TaskExecNode {
 			self.RunningStatus = 2
 			_, taskStatus := self.CheckTaskStatus()
 			if taskStatus == 1 {
+				taskStatus = -1
+			}
+			if taskStatus == 1 {
+				// 没价值的逻辑
 				fmt.Println("Exec(), the task output result is directly available !!!")
 				self.toTaskFinish()
 			} else {
@@ -226,6 +227,9 @@ func (self *TaskExecNode) Exec() *TaskExecNode {
 					// clear the status info file
 					filePath := resDirPath + "renderingStatus.json"
 					flag := filesys.RemoveFileWithPath(filePath)
+					// filePath = resDirPath + "draco/status.json"
+					dirPath := resDirPath + "draco/"
+					flag = filesys.RemoveDirAndFiles(dirPath)
 					fmt.Println("Exec(), clear the rtask status info file, flag: ", flag, filePath)
 				}
 				self.ResFilePath = filesys.GetModelFilePath(resDirPath, self.ResUrl)

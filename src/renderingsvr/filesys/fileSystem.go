@@ -47,8 +47,20 @@ func GetModelExportCMD(modelFilePath string) string {
 	return LocalSysCfg.GetModelExportCMD(modelFilePath)
 }
 func RemoveFileWithPath(filePath string) bool {
-	err := os.Remove(filePath)
-	return !(err != nil)
+	hasFilePath, _ := PathExists(filePath)
+	if hasFilePath {
+		err := os.Remove(filePath)
+		return (err == nil)
+	}
+	return false
+}
+func RemoveDirAndFiles(dirPath string) bool {
+	hasDirPath, _ := PathExists(dirPath)
+	if hasDirPath {
+		err := os.RemoveAll(dirPath)
+		return (err == nil)
+	}
+	return false
 }
 func ReadRenderingStatusJson(pathDir string) (RenderingIns, error) {
 	pathStr := pathDir + "renderingStatus.json"

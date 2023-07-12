@@ -9,17 +9,14 @@ import (
 // go mod init renderingsvr.com/message
 
 type RenderingSTChannelData struct {
-	PathDir       string
-	TaskName      string
-	TaskAction    string
-	ResUrl        string
-	RootDir       string
-	StType        int
-	Flag          int
-	TaskID        int64
-	Resolution    [2]int
-	Camdvs        [16]float64
-	BGTransparent int
+	PathDir    string
+	TaskName   string
+	TaskAction string
+	ResUrl     string
+	RootDir    string
+	StType     int
+	Flag       int
+	TaskID     int64
 
 	RNode rdata.RTRenderingNode `json:"rnode"`
 }

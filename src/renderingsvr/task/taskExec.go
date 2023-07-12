@@ -72,9 +72,6 @@ func StartupATask(rootDir string, resDirPath string, rendererPath string, rtNode
 	NotifyTaskInfoToSvr("task_rendering_load_res", 0, taskID, taskName)
 
 	var configParam filesys.RenderingConfigParam
-	configParam.Resolution = rtNode.Resolution
-	configParam.Camdvs = rtNode.Camdvs
-	configParam.BGTransparent = rtNode.BGTransparent
 	configParam.RNode = rtNode.RNode
 	configParam.ResourceType = "none"
 	configParam.Models = []string{""}

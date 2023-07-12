@@ -164,14 +164,9 @@ func StartupTaskCheckingTicker(in <-chan message.RenderingSTChannelData) {
 					execNode.ResUrl = st.ResUrl
 					execNode.RootDir = st.RootDir
 					execNode.Action = st.TaskAction
-					execNode.Resolution = st.Resolution
-					execNode.Camdvs = st.Camdvs
-					execNode.BGTransparent = st.BGTransparent
 					execNode.RNode = st.RNode
 
 					fmt.Println("	$$$->>> execNode.TaskID: ", execNode.TaskID)
-					fmt.Println("	$$$->>> execNode.Resolution: ", execNode.Resolution)
-					fmt.Println("	$$$->>> execNode.Camdvs: ", execNode.Camdvs)
 					fmt.Println("	$$$->>> execNode.TaskName: ", execNode.TaskName)
 					fmt.Println("	$$$->>> execNode.ResUrl: ", execNode.ResUrl)
 				}
@@ -231,9 +226,6 @@ func AddANewTaskFromTaskInfo(tasks []RTaskJsonNode) {
 				st.TaskName = tk.Name
 				st.TaskAction = tk.Action
 				st.ResUrl = tk.ResUrl
-				st.Resolution = tk.Resolution
-				st.Camdvs = tk.Camdvs
-				st.BGTransparent = tk.BGTransparent
 				st.RNode = tk.RNode
 				st.RootDir = RootDir
 				st.StType = 1

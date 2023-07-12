@@ -15,6 +15,7 @@ type RTMaterialNode struct {
 	Metallic       float64    `json:"metallic"`
 	Roughness      float64    `json:"roughness"`
 	NormalStrength float64    `json:"normalStrength"`
+	Act            string     `json:"act"` // its values: add, del, update
 }
 type RTEnvNode struct {
 	Path       string  `json:"path"`
